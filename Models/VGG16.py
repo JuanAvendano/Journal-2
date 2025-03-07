@@ -13,8 +13,9 @@ from torchvision import models, transforms
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import ImageFolder
 import time
-
-
+import os
+from Metrics import calculate_metrics
+from Metrics import plot_confusion_matrix
 
 # ======================================================================================================================
 # 0. Inputs
@@ -153,11 +154,13 @@ def evaluate_final_model(model, test_loader, criterion, device):
     correct = 0
     total = 0
     predictions = []
+    labels_list = []
 
     with torch.no_grad():  # No gradients are needed for testing
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
+            labels_list += labels.tolist()
 
             # Calculate loss
             loss = criterion(outputs, labels)
@@ -171,6 +174,8 @@ def evaluate_final_model(model, test_loader, criterion, device):
             # inference
             predictions.extend(predicted.cpu().numpy())
 
+    metrics = calculate_metrics(predictions, labels_list, num_classes)
+    plot_confusion_matrix(labels_list, predictions, class_names)
 
     test_loss = running_loss / len(test_loader)
     test_accuracy = correct / total
@@ -224,8 +229,8 @@ print(f"Test samples: {len(test_dataset)}")
 # Main Script
 if __name__ == "__main__":
     # Initialize and set up data, model, etc.
-    num_classes = 4  # Example for 4 classes
-
+    class_names =  os.listdir(test_path)
+    num_classes = len(class_names)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = load_VGG16(num_classes, device)
