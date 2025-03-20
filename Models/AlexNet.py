@@ -159,12 +159,14 @@ def evaluate_final_model(model, test_loader, criterion, device):
     predictions = []
     labels_list = []
     all_probs = []  # Store softmax probabilities
+    filenames_list = []
 
     with torch.no_grad():  # No gradients are needed for testing
-        for inputs, labels in test_loader:
+        for inputs, labels, paths in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             labels_list += labels.tolist()
+            filenames_list += [os.path.basename(p) for p in paths]  # Store just the image name
             probs = torch.softmax(outputs, dim=1)  # Convert logits to probabilities
 
             # Save probabilities and labels
@@ -185,15 +187,17 @@ def evaluate_final_model(model, test_loader, criterion, device):
     metrics = calculate_metrics(predictions, labels_list, num_classes)
     plot_confusion_matrix(labels_list, predictions, class_names, "AlexNet")
 
-    # Convert lists to numpy arrays
-    all_probs = np.concatenate(all_probs, axis=0)
-
+    # Calculates test loss and accuracy
     test_loss = running_loss / len(test_loader)
     test_accuracy = correct / total
     print(f"Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.4f}")
 
+    # Convert lists to numpy arrays
+    all_probs = np.concatenate(all_probs, axis=0)
+
     # Save probabilities and labels to file
     df_probs = pd.DataFrame(all_probs, columns=[f'Class_{i}_prob' for i in range(all_probs.shape[1])])
+    df_probs.insert(0, 'Image_Name', filenames_list)
     df_probs['True Label'] = labels_list
 
     # Save DataFrame to CSV
@@ -217,9 +221,17 @@ transform = transforms.Compose([
 
 # ===== Load Dataset =====
 
+class ImageFolderWithPaths(ImageFolder):
+    def __getitem__(self, index):
+        # Original tuple: (image_tensor, label)
+        original_tuple = super().__getitem__(index)
+        path, _ = self.samples[index]
+        # Return (image_tensor, label, path)
+        return original_tuple + (path,)
+
 # Load datasets
-train_dataset = ImageFolder(root=train_path, transform=transform)
-test_dataset = ImageFolder(root=test_path, transform=transform)
+train_dataset = ImageFolderWithPaths(root=train_path, transform=transform)
+test_dataset = ImageFolderWithPaths(root=test_path, transform=transform)
 
 # Print class names to verify
 print(train_dataset.classes)
