@@ -13,18 +13,20 @@ import seaborn as sns
 def calculate_metrics(predictions, true_labels, num_classes):
     cm = confusion_matrix(true_labels, predictions, labels=list(range(num_classes)))
 
-    # Accuracy
+    # Accuracy (TP+TN)/(TP+FP+TN+FN)
     accuracy = accuracy_score(true_labels, predictions)
 
     # Precision, Recall, F1 Score (per class)
+    # Precision (TP)/(TP+FP)
     precision = precision_score(true_labels, predictions, average='weighted')
+    # Recall (TP)/(TP+FN)
     recall = recall_score(true_labels, predictions, average='weighted')
+    # F1 Score 2*(Precision*Recall)/(Precision+Recall)
     f1 = f1_score(true_labels, predictions, average='weighted')
-
     # Specificity (TN / (TN + FP)) per class
-    specificity = np.diag(cm) / np.sum(cm, axis=1)
+    specificity = np.diag(cm) / np.sum(cm, axis=0)
 
-    # F2 Score (weighted)
+    # F2 Score (weighted) 5*(Precision*Recall)/(4*Precision+Recall)
     f2 = 5 * (precision * recall) / (4 * precision + recall)
 
     print(f"Accuracy: {accuracy:.4f}")
@@ -37,18 +39,17 @@ def calculate_metrics(predictions, true_labels, num_classes):
     return  accuracy, precision, recall, f1, specificity, f2
 
 
-def plot_confusion_matrix(y_true, y_pred, class_names):
+def plot_confusion_matrix(y_true, y_pred, class_names, method):
     cm = confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
-    plt.title("Confusion Matrix")
+    plt.title("Confusion Matrix: "+ method)
     plt.show()
 
-# Example of calling the function
-# cm, accuracy, precision, recall, f1, specificity, f2 = calculate_metrics(predictions, true_labels)
+
 
 
 
