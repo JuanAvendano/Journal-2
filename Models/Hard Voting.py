@@ -43,8 +43,8 @@ alexnet = load_AlexNet(num_classes, device)
 
 # Load trained weights
 vgg16.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_VGG16v2.pth", map_location=device))
-resnet50.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_ResNet50v1.pth", map_location=device))
-alexnet.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_AlexNetv1.pth", map_location=device))
+resnet50.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_ResNet50v01.pth", map_location=device))
+alexnet.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_AlexNetv01.pth", map_location=device))
 
 
 # Set models to evaluation mode
@@ -123,11 +123,7 @@ if __name__ == "__main__":
         predictions = [hard_voting_ensemble(img, models) for img in image_paths]
 
         metrics = calculate_metrics( predictions, true_labels, num_classes)
-        plot_confusion_matrix(true_labels, predictions, class_names.values())
-
-        # print("Evaluation Metrics:")
-        # for metric, value in metrics.items():
-        #     print(f"{metric}: {value:.4f}")
+        plot_confusion_matrix(true_labels, predictions, class_names.values(), "Hard Voting")
 
     else:  # Prediction mode
         image_paths = load_images(image_folder, mode)
