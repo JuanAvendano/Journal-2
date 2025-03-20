@@ -7,6 +7,8 @@ CNN for training VGG16
 """
 
 import torch
+import numpy as np
+import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models, transforms
@@ -24,6 +26,7 @@ from Metrics import plot_confusion_matrix
 train_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\01-train"   # Paths to train dataset
 test_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\02-test"     # Paths to test dataset
 save_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Saved_models\\best_VGG16v3.pth"
+save_probs_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Saved_models\\Probabilities\\VGG16\\"
 batch_size = 32     # Define batch size
 split_ratio = 0.8   # Split ratio for training and validation
 lrn_rate = 0.001
@@ -94,7 +97,7 @@ def train_model(model, train_loader, val_loader, loss_func, optimizer, num_epoch
         train_accuracy = correct_train / total_train
 
         # Validation loop
-        val_accuracy = evaluate_model(model, val_loader, device)
+        val_accuracy = evaluate_accuracy(model, val_loader, device)
         val_loss = evaluate_loss(model, val_loader, loss_func, device)
 
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
@@ -127,7 +130,7 @@ def evaluate_loss(model, val_loader, criterion, device):
     return running_loss / len(val_loader)
 
 # Helper function for evaluating the model (e.g., accuracy on the validation set)
-def evaluate_model(model, val_loader, device):
+def evaluate_accuracy(model, val_loader, device):
     model.eval()  # Set the model to evaluation mode
     correct = 0
     total = 0
@@ -155,12 +158,17 @@ def evaluate_final_model(model, test_loader, criterion, device):
     total = 0
     predictions = []
     labels_list = []
+    all_probs = []  # Store softmax probabilities
 
     with torch.no_grad():  # No gradients are needed for testing
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             labels_list += labels.tolist()
+            probs = torch.softmax(outputs, dim=1)  # Convert logits to probabilities
+
+            # Save probabilities and labels
+            all_probs.append(probs.cpu().numpy())
 
             # Calculate loss
             loss = criterion(outputs, labels)
@@ -175,11 +183,24 @@ def evaluate_final_model(model, test_loader, criterion, device):
             predictions.extend(predicted.cpu().numpy())
 
     metrics = calculate_metrics(predictions, labels_list, num_classes)
-    plot_confusion_matrix(labels_list, predictions, class_names)
+    plot_confusion_matrix(labels_list, predictions, class_names,"VGG16")
+
+    # Convert lists to numpy arrays
+    all_probs = np.concatenate(all_probs, axis=0)
 
     test_loss = running_loss / len(test_loader)
     test_accuracy = correct / total
     print(f"Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.4f}")
+
+    # Save probabilities and labels to file
+    df_probs = pd.DataFrame(all_probs, columns=[f'Class_{i}_prob' for i in range(all_probs.shape[1])])
+    df_probs['True Label'] = labels_list
+
+    # Save DataFrame to CSV
+    csv_file_path = os.path.join(save_probs_path, "VGG16_probs.csv")
+    df_probs.to_csv(csv_file_path, index=False)
+    print(f"Saved probabilities to {csv_file_path}")
+
     return predictions  # Return list of predictions
 
 # ======================================================================================================================
@@ -241,7 +262,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=lrn_rate)  # Learning rate set to 0.001
 
     # More setup here ...
-    train_model(model, train_loader, val_loader, loss_func, optimizer,epochs)
+    # train_model(model, train_loader, val_loader, loss_func, optimizer,epochs)
 
     # Load the best model
     model.load_state_dict(torch.load(save_path))  # Make sure to load the model after training
