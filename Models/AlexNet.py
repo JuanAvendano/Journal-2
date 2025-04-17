@@ -24,9 +24,10 @@ from Metrics import plot_confusion_matrix
 # ======================================================================================================================
 
 train_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\01-train"   # Paths to train dataset
-test_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\02-test"     # Paths to test dataset
+validation_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\02-validation"   # Paths to validation dataset
+test_path = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\03-test"     # Paths to test dataset
 save_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Saved_models\\best_AlexNetv01.pth"
-save_probs_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Saved_models\\Probabilities\\AlexNet\\"
+save_probs_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Results\\00_Probabilities\\AlexNet\\"
 batch_size = 32     # Define batch size
 split_ratio = 0.8   # Split ratio for training and validation
 lrn_rate = 0.001
@@ -73,7 +74,7 @@ def train_model(model, train_loader, val_loader, loss_func, optimizer, num_epoch
         total_train = 0
 
         # Training loop
-        for inputs, labels in train_loader:
+        for inputs, labels,_ in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
 
             # Zero the parameter gradients
@@ -97,8 +98,9 @@ def train_model(model, train_loader, val_loader, loss_func, optimizer, num_epoch
         train_accuracy = correct_train / total_train
 
         # Validation loop
-        val_accuracy = evaluate_accuracy(model, val_loader, device)
-        val_loss = evaluate_loss(model, val_loader, loss_func, device)
+        val_outputs, val_labels, val_probs, val_predictions, val_filenames = evaluate_validation_set(model, val_loader, device)
+        val_accuracy = evaluate_accuracy(val_outputs, val_labels)
+        val_loss = evaluate_loss(val_outputs, val_labels, loss_func)
 
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
 
@@ -111,42 +113,70 @@ def train_model(model, train_loader, val_loader, loss_func, optimizer, num_epoch
             print(f"Validation accuracy improved. Saving model...")
             best_accuracy = val_accuracy
             torch.save(model.state_dict(), save_path)  # Save the best model
+            save_validation_csv(save_probs_path, epoch, val_filenames, val_labels.tolist(), val_predictions, val_probs)
 
     print("Training complete.")
     print(f"Best Validation Accuracy: {best_accuracy:.4f}")
 
-# Helper function for evaluating the model's loss (e.g.,loss on the validation set)
-def evaluate_loss(model, val_loader, criterion, device):
+# Helper function for evaluating the results of the validation results
+def evaluate_validation_set(model, val_loader, device):
     model.eval()  # Set the model to evaluation mode
-    running_loss = 0.0
+    predictions = []
+    all_outputs = []
+    all_labels = []
+    filenames_list = []
+    all_probs_val = []
 
     with torch.no_grad():  # No gradients are needed for validation
-        for inputs, labels in val_loader:
+        for inputs, labels,paths_val in val_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            running_loss += loss.item()
 
-    return running_loss / len(val_loader)
+            all_outputs.append(outputs.cpu())
+            all_labels.append(labels.cpu())
+
+            probs_val = torch.softmax(outputs, dim=1)
+            all_probs_val.append(probs_val.cpu().numpy())
+            _, predicted = torch.max(outputs, 1)
+            predictions += predicted.cpu().tolist()
+            filenames_list += [os.path.basename(p) for p in paths_val]
+
+    all_outputs_tensor = torch.cat(all_outputs, dim=0)
+    all_labels_tensor = torch.cat(all_labels, dim=0)
+    all_probs_list= np.concatenate(all_probs_val, axis=0)
+
+
+    return all_outputs_tensor, all_labels_tensor,all_probs_list, predictions, filenames_list
+
+# Helper function for evaluating the model's loss (e.g.,loss on the validation set)
+def evaluate_loss(outputs, labels, criterion):
+    loss = criterion(outputs, labels)
+    return loss.item()
 
 # Helper function for evaluating the model (e.g., accuracy on the validation set)
-def evaluate_accuracy(model, val_loader, device):
-    model.eval()  # Set the model to evaluation mode
-    correct = 0
-    total = 0
-
-    with torch.no_grad():  # No gradients are needed for validation
-        for inputs, labels in val_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, predicted = torch.max(outputs, 1)
-
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+def evaluate_accuracy(outputs, labels):
+    _, predicted = torch.max(outputs, 1)
+    correct = (predicted == labels).sum().item()
+    total = labels.size(0)
 
     accuracy = correct / total
     return accuracy
 
+def save_validation_csv(save_path, epoch, filenames_list, val_labels_list, predictions, all_probs):
+    """
+    Save the validation results to a CSV file.
+    Overwrites the existing file each time it's called.
+    """
+    # Create DataFrame with probabilities
+    df_probs = pd.DataFrame(all_probs, columns=[f'Class_{i}_prob' for i in range(all_probs.shape[1])])
+    df_probs.insert(0, 'Image_Name', filenames_list)
+    df_probs['True_Label'] = val_labels_list
+    df_probs['Predicted_Label'] = predictions
+
+    # Save to a fixed CSV file name (overwrite each time)
+    csv_file_path = os.path.join(save_path, f"AlexNet_best_val_results.csv")
+    df_probs.to_csv(csv_file_path, index=False)
+    print(f"Validation results saved to {csv_file_path} (epoch {epoch + 1})")
 
 def evaluate_final_model(model, test_loader, criterion, device):
     """
@@ -201,7 +231,7 @@ def evaluate_final_model(model, test_loader, criterion, device):
     df_probs['True Label'] = labels_list
 
     # Save DataFrame to CSV
-    csv_file_path = os.path.join(save_probs_path, "AlexNet_probs.csv")
+    csv_file_path = os.path.join(save_probs_path, "AlexNet_test_probs.csv")
     df_probs.to_csv(csv_file_path, index=False)
     print(f"Saved probabilities to {csv_file_path}")
 
@@ -231,6 +261,7 @@ class ImageFolderWithPaths(ImageFolder):
 
 # Load datasets
 train_dataset = ImageFolderWithPaths(root=train_path, transform=transform)
+validation_dataset = ImageFolderWithPaths(root=validation_path, transform=transform)
 test_dataset = ImageFolderWithPaths(root=test_path, transform=transform)
 
 # Print class names to verify
@@ -243,16 +274,16 @@ train_size = int(split_ratio * len(train_dataset))  # split_ratio value for trai
 val_size = len(train_dataset) - train_size  # remaining for validation
 
 # Split dataset
-train_data, val_data = random_split(train_dataset, [train_size, val_size])
+# train_data, val_data = random_split(train_dataset, [train_size, val_size])
 
 # Create data loaders in batches of images
-train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Check the number of images
-print(f"Train samples: {len(train_data)}")
-print(f"Validation samples: {len(val_data)}")
+print(f"Train samples: {len(train_dataset)}")
+print(f"Validation samples: {len(validation_dataset)}")
 print(f"Test samples: {len(test_dataset)}")
 
 # ======================================================================================================================
@@ -275,7 +306,7 @@ if __name__ == "__main__":
 
 
     # More setup here ...
-    # train_model(model, train_loader, val_loader, loss_func, optimizer,epochs)
+    train_model(model, train_loader, val_loader, loss_func, optimizer,epochs)
 
     # Load the best model
     model.load_state_dict(torch.load(save_path))  # Make sure to load the model after training
