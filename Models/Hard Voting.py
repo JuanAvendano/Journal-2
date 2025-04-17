@@ -5,139 +5,112 @@ Created on Thu Mar 06 2025
 
 Ensemble learning fusion by Hard Voting
 """
-import torch
-import torch.nn.functional as F
-import os
-from torchvision import transforms
-from PIL import Image
-from VGG16 import load_VGG16
-from ResNet50 import load_ResNet50
-from AlexNet import load_AlexNet
-from torchvision.datasets import ImageFolder
-from Metrics import calculate_metrics
-from Metrics import plot_confusion_matrix
+import numpy as np
+import pandas as pd
+from Metrics import calculate_metrics, plot_confusion_matrix
 
 # ======================================================================================================================
 # 0. Inputs & Configuration
 # ======================================================================================================================
-
 mode = "evaluation"  # Change to "prediction" for unlabeled case studies
 
-# image_path = r"C:\Users\jcac\OneDrive - KTH\Datasets\DataEnsemble\03-test\c9.jpg"
-image_folder = "C:\\Users\\jcac\\OneDrive - KTH\\Datasets\\DataEnsemble\\02-test"
+probs_VGG16_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Results\\00_Probabilities\\VGG16\\"
+probs_Alex_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Results\\00_Probabilities\\AlexNet\\"
+probs_ResNet_path="C:\\Users\\jcac\\OneDrive - KTH\\Python\\CNN\\Journal-2\\Results\\00_Probabilities\\ResNet50\\"
+results_path = r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Results\02_Method_results\01_Hard_voting\\"
 
-# class_names = sorted(os.listdir(image_folder))  # Extract class names from folder structure
-class_names = {0: "Crack", 1: "Efflorescence", 2: "Spalling", 3: "Undamaged"}
-num_classes = len(class_names)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# ======================================================================================================================
+# 1. Load probs csvs
+# ======================================================================================================================
+def parse_custom_csv(file_path):
+    data = pd.read_csv(file_path, header=None, skiprows=1)  # No headers assumed
+    split_data = data[0].str.split(";", expand=True)
+
+    # Assign columns
+    split_data.columns = ['Image', 'Crack', 'Efflorescence', 'Spalling', 'Undamaged', 'True Label']
+
+    for col in ['Crack', 'Efflorescence', 'Spalling', 'Undamaged', 'True Label']:
+        split_data[col] = pd.to_numeric(split_data[col], errors='coerce')
+
+    return split_data
+
+csvVGG16 = probs_VGG16_path+"VGG16_test_probs.csv"
+csvAlexNet = probs_Alex_path+"AlexNet_test_probs.csv"
+csvResNet = probs_ResNet_path+"ResNet_test_probs.csv"
+
+df1 = parse_custom_csv(csvVGG16)
+df2 = parse_custom_csv(csvAlexNet)
+df3 = parse_custom_csv(csvResNet)
 
 
 # ======================================================================================================================
-# 1. Load trained models
+# 2. class probabilities
 # ======================================================================================================================
 
-# Load models
-vgg16 = load_VGG16(num_classes, device)
-resnet50 = load_ResNet50(num_classes, device)
-alexnet = load_AlexNet(num_classes, device)
+# Assert all image names match
+assert all(df1['Image'] == df2['Image']) and all(df1['Image'] == df3['Image']), "Image order mismatch!"
 
-# Load trained weights
-vgg16.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_VGG16v2.pth", map_location=device))
-resnet50.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_ResNet50v01.pth", map_location=device))
-alexnet.load_state_dict(torch.load(r"C:\Users\jcac\OneDrive - KTH\Python\CNN\Journal-2\Saved_models\best_AlexNetv01.pth", map_location=device))
+# Extract data
+image_names = df1['Image'].tolist()
+true_labels = df1['True Label'].tolist()
+class_names = ['Crack', 'Efflorescence', 'Spalling', 'Undamaged']
 
-
-# Set models to evaluation mode
-vgg16.eval()
-resnet50.eval()
-alexnet.eval()
-
-# Dictionary of models
-models = {"VGG16": vgg16,"ResNet50": resnet50,"AlexNet": alexnet}
-
-# ======================================================================================================================
-# 2. Image Preprocessing & Dataloader
-# ======================================================================================================================
-
-def get_transform(model_name):
-    size = 227 if model_name == "AlexNet" else 224
-
-    return transforms.Compose([
-        transforms.Resize((size, size)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-# Function to preprocess the image
-def preprocess_image(image_path, model_name):
-    image = Image.open(image_path).convert("RGB")  # Open and convert to RGB
-    transform = get_transform(model_name)
-    image = transform(image)  # Apply transformation
-    image = image.unsqueeze(0).to(device)  # Add batch dimension
-    return image
-
-
-def load_images(image_folder, mode):
-    image_paths, labels = [], []
-
-    for class_idx, class_name in enumerate(class_names.values()):
-        class_path = os.path.join(image_folder, class_name)
-        if not os.path.isdir(class_path):
-            continue
-
-        for img_name in os.listdir(class_path):
-            img_path = os.path.join(class_path, img_name)
-            image_paths.append(img_path)
-            if mode == "evaluation":
-                labels.append(class_idx)
-
-    return image_paths, labels if mode == "evaluation" else image_paths
+# Extract class probabilities
+M1_probs = df1[class_names].values
+M2_probs = df2[class_names].values
+M3_probs = df3[class_names].values
 
 # ======================================================================================================================
 # 3. Hard Voting Function
 # ======================================================================================================================
 # Hard Voting function
-def hard_voting_ensemble(image_path, models):
-    votes = []
+def hard_voting_ensemble(probs_M1, probs_M2, probs_M3):
 
-    for model_name,model in models.items():
-        image = preprocess_image(image_path, model_name)
-        with torch.no_grad():
-            outputs = model(image)
-            predicted_class = torch.argmax(F.softmax(outputs, dim=1), dim=1).item()
-            votes.append(predicted_class)
+    M1_probs = np.array(probs_M1)
+    M2_probs = np.array(probs_M2)
+    M3_probs = np.array(probs_M3)
 
+    M1_prediction = int(np.argmax(M1_probs))
+    M2_prediction = int(np.argmax(M2_probs))
+    M3_prediction = int(np.argmax(M3_probs))
+    votes = [M1_prediction,M2_prediction,M3_prediction]
 
     # Majority voting
-    final_prediction = max(set(votes), key=votes.count)
-    return final_prediction
+    final_class = max(set(votes), key=votes.count)
+    final_prediction_vector = [0] * len(class_names)
+    final_prediction_vector[final_class] = 1
+    return final_prediction_vector
 
 # ======================================================================================================================
 # 4. Run Inference & Evaluation
 # ======================================================================================================================
 # Main Script
 if __name__ == "__main__":
-
     if mode == "evaluation":
-        image_paths, true_labels = load_images(image_folder, mode)
-        predictions = [hard_voting_ensemble(img, models) for img in image_paths]
+        final_probs = [hard_voting_ensemble(m1, m2, m3) for m1, m2, m3 in zip(M1_probs, M2_probs, M3_probs)]
+
+        final_df = pd.DataFrame(final_probs, columns=class_names)
+        final_df.insert(0, "Image", image_names)  # Add image names
+        final_df["True Label"] = true_labels  # Add true labels
+
+        # Get predicted class indices from final_probs
+        predictions = np.argmax(final_df[class_names].values, axis=1)
+        num_classes = len(class_names)
 
         metrics = calculate_metrics( predictions, true_labels, num_classes)
-        plot_confusion_matrix(true_labels, predictions, class_names.values(), "Hard Voting")
+        plot_confusion_matrix(true_labels, predictions, class_names, "Hard Voting")
+
+        # Save results
+        final_df.to_csv(results_path+"Hard_Voting_results.csv", index=False)
+        print("Final Bayesian predictions saved to 'Hard_Voting_results.csv'")
 
     else:  # Prediction mode
-        image_paths = load_images(image_folder, mode)
-        predictions = [class_names[hard_voting_ensemble(img, models)] for img in image_paths]
+        final_probs = [hard_voting_ensemble(m1, m2, m3) for m1, m2, m3 in zip(M1_probs, M2_probs, M3_probs)]
 
-        for img_path, pred in zip(image_paths, predictions):
-            print(f"Image: {os.path.basename(img_path)} -> Predicted Class: {pred}")
+        final_df = pd.DataFrame(final_probs, columns=class_names)
+        final_df.insert(0, "Image", image_names)  # Add image names
+        final_df["True Label"] = true_labels  # Add true labels
 
-
-
-# # Run hard voting ensemble
-# final_label = hard_voting_ensemble(image_path,models)
-# final_prediction = class_names[final_label]
-#
-# cm, accuracy, precision, recall, f1, specificity, f2 = calculate_metrics()
-#
-# print(f'Ensemble Prediction (Hard Voting): {final_prediction}')
+        # Save results
+        final_df.to_csv(results_path + "Hard_Voting_results.csv", index=False)
+        print("Final Bayesian predictions saved to 'Hard_Voting_results.csv'")
