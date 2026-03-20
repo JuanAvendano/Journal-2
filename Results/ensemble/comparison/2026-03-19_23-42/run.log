@@ -1,0 +1,27 @@
+2026-03-19 23:42:04 | __main__ | INFO | Ensemble evaluation run directory: results\ensemble\comparison\2026-03-19_23-42
+2026-03-19 23:42:04 | __main__ | INFO | Config: configs/ensemble_config.yaml
+2026-03-19 23:42:04 | __main__ | INFO | Loading test set predictions...
+2026-03-19 23:42:04 | __main__ | INFO |   Loading vgg16 (test): results\training\vgg16\2026-03-19_17-25\predictions\test_predictions.csv
+2026-03-19 23:42:04 | __main__ | INFO |   Loading resnet50 (test): results\training\resnet50\2026-03-19_22-59\predictions\test_predictions.csv
+2026-03-19 23:42:04 | __main__ | INFO |   Loading alexnet (test): results\training\alexnet\2026-03-19_22-58\predictions\test_predictions.csv
+2026-03-19 23:42:04 | __main__ | INFO |   Image alignment verified: 593 images, 3 models.
+2026-03-19 23:42:04 | __main__ | INFO | Models loaded: ['vgg16', 'resnet50', 'alexnet']
+2026-03-19 23:42:04 | __main__ | INFO | Test images:   593
+2026-03-19 23:42:04 | __main__ | INFO | Running methods: ['hard_voting', 'soft_voting', 'bayesian_fusion']
+2026-03-19 23:42:04 | __main__ | INFO |   Running: hard_voting
+2026-03-19 23:42:05 | __main__ | INFO |     Accuracy: 0.8954 | F1: 0.8954
+2026-03-19 23:42:05 | __main__ | INFO |   Running: soft_voting
+2026-03-19 23:42:05 | __main__ | INFO |     Accuracy: 0.9022 | F1: 0.9029
+2026-03-19 23:42:05 | __main__ | INFO |   Running: bayesian_fusion
+2026-03-19 23:42:05 | __main__ | INFO |     Accuracy: 0.9005 | F1: 0.9013
+2026-03-19 23:42:05 | __main__ | INFO | Saving comparison summary...
+2026-03-19 23:42:05 | __main__ | INFO | Generating comparison plots...
+2026-03-19 23:42:07 | __main__ | INFO | ======================================================================
+2026-03-19 23:42:07 | __main__ | INFO | ENSEMBLE EVALUATION COMPLETE
+2026-03-19 23:42:07 | __main__ | INFO | Method                      Accuracy  Precision     Recall         F1         F2
+2026-03-19 23:42:07 | __main__ | INFO | ----------------------------------------------------------------------
+2026-03-19 23:42:07 | __main__ | INFO | hard_voting                   0.8954     0.8959     0.8954     0.8954     0.8955
+2026-03-19 23:42:07 | __main__ | INFO | soft_voting                   0.9022     0.9059     0.9022     0.9029     0.9029
+2026-03-19 23:42:07 | __main__ | INFO | bayesian_fusion               0.9005     0.9045     0.9005     0.9013     0.9013
+2026-03-19 23:42:07 | __main__ | INFO | ======================================================================
+2026-03-19 23:42:07 | __main__ | INFO | Results saved to: results\ensemble\comparison\2026-03-19_23-42

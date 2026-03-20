@@ -1,0 +1,38 @@
+{
+    "overall": {
+        "accuracy": 0.8769,
+        "precision": 0.8811,
+        "recall": 0.8769,
+        "f1": 0.8772,
+        "f2": 0.8777
+    },
+    "per_class": {
+        "crack": {
+            "precision": 0.9153,
+            "recall": 0.9114,
+            "f1": 0.9133,
+            "specificity": 0.9438
+        },
+        "efflorescence": {
+            "precision": 0.7905,
+            "recall": 0.8925,
+            "f1": 0.8384,
+            "specificity": 0.956
+        },
+        "spalling": {
+            "precision": 0.8309,
+            "recall": 0.8828,
+            "f1": 0.8561,
+            "specificity": 0.9505
+        },
+        "undamaged": {
+            "precision": 0.931,
+            "recall": 0.8,
+            "f1": 0.8606,
+            "specificity": 0.9825
+        }
+    },
+    "model": "vgg16",
+    "run_dir": "results\\training\\vgg16\\2026-03-20_01-37",
+    "config": "configs/train_config.yaml"
+}

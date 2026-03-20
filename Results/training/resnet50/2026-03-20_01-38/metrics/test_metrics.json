@@ -1,0 +1,38 @@
+{
+    "overall": {
+        "accuracy": 0.7757,
+        "precision": 0.7735,
+        "recall": 0.7757,
+        "f1": 0.773,
+        "f2": 0.7753
+    },
+    "per_class": {
+        "crack": {
+            "precision": 0.7985,
+            "recall": 0.8861,
+            "f1": 0.84,
+            "specificity": 0.8511
+        },
+        "efflorescence": {
+            "precision": 0.7073,
+            "recall": 0.6237,
+            "f1": 0.6629,
+            "specificity": 0.952
+        },
+        "spalling": {
+            "precision": 0.7355,
+            "recall": 0.6953,
+            "f1": 0.7149,
+            "specificity": 0.9312
+        },
+        "undamaged": {
+            "precision": 0.811,
+            "recall": 0.763,
+            "f1": 0.7863,
+            "specificity": 0.9476
+        }
+    },
+    "model": "resnet50",
+    "run_dir": "results\\training\\resnet50\\2026-03-20_01-38",
+    "config": "configs/train_config.yaml"
+}

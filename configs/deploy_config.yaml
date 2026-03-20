@@ -1,0 +1,87 @@
+# ==============================================================================
+# deploy_config.yaml
+# ------------------------------------------------------------------------------
+# Configuration for deployment mode — running the ensemble on new, unlabelled
+# bridge inspection images to flag which ones contain damage.
+#
+# This is the config used when the repository is called as part of the larger
+# inspection pipeline (orchestrated by pipeline.yaml at the repo root).
+# No ground truth labels are needed or expected in this mode.
+#
+# Usage (standalone):
+#   python scripts/deploy.py --config configs/deploy_config.yaml
+#                            --input path/to/new/images
+#
+# Usage (via pipeline):
+#   The pipeline.yaml at the repo root calls this script automatically.
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# Class names
+# ------------------------------------------------------------------------------
+dataset:
+  class_names: ["crack", "efflorescence", "spalling", "undamaged"]
+  num_classes: 4
+
+
+# ------------------------------------------------------------------------------
+# Trained model checkpoints
+# ------------------------------------------------------------------------------
+# These are the saved weights (.pth files) from training.
+# Each model is loaded and run on the input images to generate probabilities,
+# which are then combined by the fusion method below.
+saved_models:
+  vgg16:    "saved_models/vgg16/best.pth"
+  resnet50: "saved_models/resnet50/best.pth"
+  alexnet:  "saved_models/alexnet/best.pth"
+
+
+# ------------------------------------------------------------------------------
+# Model input sizes
+# ------------------------------------------------------------------------------
+# Each model expects a specific input image size. These must match what was
+# used during training. They are used here to apply the correct resize transform
+# to the input images before feeding them into each model.
+input_sizes:
+  vgg16:    224
+  resnet50: 224
+  alexnet:  227
+
+
+# ------------------------------------------------------------------------------
+# Fusion method
+# ------------------------------------------------------------------------------
+# Which ensemble method to use for combining model outputs in deployment.
+# Choose the method that performed best during evaluate.py.
+# Supported: "hard_voting", "soft_voting", "bayesian_fusion"
+ensemble:
+  method: "soft_voting"
+
+
+# ------------------------------------------------------------------------------
+# Confidence threshold
+# ------------------------------------------------------------------------------
+# An image is flagged as damaged if the confidence score of the top predicted
+# damage class (anything except "undamaged") exceeds this threshold.
+# Range: 0.0 to 1.0. Higher = more conservative (fewer false positives).
+# Lower = more sensitive (fewer missed damages, more false alarms).
+confidence_threshold: 0.7
+
+
+# ------------------------------------------------------------------------------
+# Output
+# ------------------------------------------------------------------------------
+# The JSON file written here will be read by the segmentation pipeline.
+# It contains: flagged image paths, predicted class, and confidence score.
+output:
+  dir: "results/ensemble/predictions"
+  filename: "deployment_results.json"
+
+
+# ------------------------------------------------------------------------------
+# ImageNet normalisation (must match training)
+# ------------------------------------------------------------------------------
+normalisation:
+  mean: [0.485, 0.456, 0.406]
+  std:  [0.229, 0.224, 0.225]

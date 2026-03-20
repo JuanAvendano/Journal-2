@@ -1,0 +1,32 @@
+2026-03-20 09:54:56 | __main__ | INFO | Bayesian Permutations Experiment
+2026-03-20 09:54:56 | __main__ | INFO | Run directory: results\experiments\bayesian_permutations\run\2026-03-20_09-54
+2026-03-20 09:54:56 | __main__ | INFO | Loading test predictions...
+2026-03-20 09:54:56 | __main__ | INFO |   Loaded vgg16: 593 images
+2026-03-20 09:54:56 | __main__ | INFO |   Loaded resnet50: 593 images
+2026-03-20 09:54:56 | __main__ | INFO |   Loaded alexnet: 593 images
+2026-03-20 09:54:56 | __main__ | INFO | Models available: ['vgg16', 'resnet50', 'alexnet']
+2026-03-20 09:54:56 | __main__ | INFO | Test images: 593
+2026-03-20 09:54:56 | __main__ | INFO | 
+Running 6 Bayesian orderings...
+2026-03-20 09:54:56 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:56 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:56 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:57 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:57 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:57 | __main__ | INFO |     Accuracy: 0.9089 | F1: 0.9101
+2026-03-20 09:54:58 | __main__ | INFO | 
+Running baseline methods...
+2026-03-20 09:54:58 | __main__ | INFO |   hard_voting: Accuracy=0.9106 | F1=0.9109
+2026-03-20 09:54:58 | __main__ | INFO |   soft_voting: Accuracy=0.9073 | F1=0.9080
+2026-03-20 09:54:58 | __main__ | INFO |   Accuracy: 0.9089
+2026-03-20 09:54:58 | __main__ | INFO |   F1:       0.9101
+2026-03-20 09:54:59 | __main__ | INFO | 
+======================================================================
+2026-03-20 09:54:59 | __main__ | INFO | EXPERIMENT COMPLETE — Results ranked by F1 (descending)
+2026-03-20 09:54:59 | __main__ | INFO | ======================================================================
+2026-03-20 09:54:59 | __main__ | INFO | Method/Ordering                            Accuracy         F1
+2026-03-20 09:54:59 | __main__ | INFO | ----------------------------------------------------------------------
+2026-03-20 09:54:59 | __main__ | INFO | Hard Voting                                  0.9106     0.9109
+2026-03-20 09:54:59 | __main__ | INFO | Soft Voting                                  0.9073     0.9080
+2026-03-20 09:54:59 | __main__ | INFO | ======================================================================
+2026-03-20 09:54:59 | __main__ | INFO | Results saved to: results\experiments\bayesian_permutations\run\2026-03-20_09-54

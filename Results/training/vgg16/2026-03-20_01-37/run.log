@@ -1,0 +1,22 @@
+2026-03-20 01:37:28 | __main__ | INFO | Run directory: results\training\vgg16\2026-03-20_01-37
+2026-03-20 01:37:28 | __main__ | INFO | Model:         vgg16
+2026-03-20 01:37:28 | __main__ | INFO | Config:        configs/train_config.yaml
+2026-03-20 01:37:28 | __main__ | INFO | Device: cuda
+2026-03-20 01:37:28 | __main__ | INFO | GPU: NVIDIA GeForce GTX 1660 SUPER
+2026-03-20 01:37:28 | __main__ | INFO | Loading datasets...
+2026-03-20 01:37:28 | __main__ | INFO | Loading model: vgg16
+2026-03-20 01:37:29 | __main__ | INFO | Total parameters:     134,276,932
+2026-03-20 01:37:29 | __main__ | INFO | Trainable parameters: 119,562,244 (89.0%)
+2026-03-20 01:37:29 | __main__ | INFO | Starting training...
+2026-03-20 01:38:10 | __main__ | INFO | Saving training curves...
+2026-03-20 01:38:11 | __main__ | INFO | Evaluating on test set...
+2026-03-20 01:38:18 | __main__ | INFO | Computing test set metrics...
+2026-03-20 01:38:18 | __main__ | INFO | Saving confusion matrix...
+2026-03-20 01:38:18 | __main__ | INFO | ============================================================
+2026-03-20 01:38:18 | __main__ | INFO | TRAINING COMPLETE
+2026-03-20 01:38:18 | __main__ | INFO |   Model:      vgg16
+2026-03-20 01:38:18 | __main__ | INFO |   Accuracy:   0.8769
+2026-03-20 01:38:18 | __main__ | INFO |   F1 Score:   0.8772
+2026-03-20 01:38:18 | __main__ | INFO |   F2 Score:   0.8777
+2026-03-20 01:38:18 | __main__ | INFO |   Run folder: results\training\vgg16\2026-03-20_01-37
+2026-03-20 01:38:18 | __main__ | INFO | ============================================================

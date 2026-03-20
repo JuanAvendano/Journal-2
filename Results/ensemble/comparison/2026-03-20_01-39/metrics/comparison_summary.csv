@@ -1,0 +1,4 @@
+Method,Accuracy,Precision,Recall,F1,F2
+hard_voting,0.887,0.8907,0.887,0.8861,0.8878
+soft_voting,0.8904,0.8905,0.8904,0.89,0.8904
+bayesian_fusion,0.887,0.8875,0.887,0.8863,0.8871

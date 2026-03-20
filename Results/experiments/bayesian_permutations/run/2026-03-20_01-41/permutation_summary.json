@@ -1,0 +1,52 @@
+{
+    "orderings": [
+        {
+            "Method": "bayesian_vgg16_resnet50_alexnet",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        },
+        {
+            "Method": "bayesian_vgg16_alexnet_resnet50",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        },
+        {
+            "Method": "bayesian_resnet50_vgg16_alexnet",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        },
+        {
+            "Method": "bayesian_resnet50_alexnet_vgg16",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        },
+        {
+            "Method": "bayesian_alexnet_vgg16_resnet50",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        },
+        {
+            "Method": "bayesian_alexnet_resnet50_vgg16",
+            "Accuracy": 0.887,
+            "Precision": 0.8875,
+            "Recall": 0.887,
+            "F1": 0.8863,
+            "F2": 0.8871
+        }
+    ]
+}

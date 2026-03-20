@@ -1,0 +1,71 @@
+# ==============================================================================
+# pipeline.yaml
+# ------------------------------------------------------------------------------
+# Top-level orchestration file for the full bridge inspection pipeline.
+#
+# This file defines the two-stage inspection workflow:
+#   Stage 1 — Ensemble classification (this repository):
+#             Run all images through the CNN ensemble to flag damaged ones.
+#   Stage 2 — Segmentation (separate repository):
+#             Run the flagged images through a segmentation network to
+#             generate pixel-level damage masks.
+#
+# Usage:
+#   python pipeline_runner.py --pipeline pipeline.yaml
+#
+# Note: pipeline_runner.py is a simple orchestrator script (not yet written)
+# that reads this file, calls Stage 1, waits for it to finish, then calls
+# Stage 2 with the output of Stage 1 as input.
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# Input
+# ------------------------------------------------------------------------------
+# Path to the folder containing the raw bridge inspection images.
+# Update this to your actual image folder before each inspection run.
+input:
+  image_dir: "data/inspection_images"
+
+
+# ------------------------------------------------------------------------------
+# Stage 1: Ensemble classification
+# ------------------------------------------------------------------------------
+stage1_ensemble:
+  script:  "scripts/deploy.py"
+  config:  "configs/deploy_config.yaml"
+
+  # The output JSON from this stage is passed as input to Stage 2.
+  # It contains the list of flagged images and their confidence scores.
+  output_json: "results/ensemble/predictions/deployment_results.json"
+
+
+# ------------------------------------------------------------------------------
+# Stage 2: Segmentation
+# ------------------------------------------------------------------------------
+# The segmentation repository is called here with the flagged images JSON
+# from Stage 1. Update 'repo_path' and 'script' to match your segmentation
+# repository's location and entry point.
+stage2_segmentation:
+  repo_path: "../segmentation-repo"      # Path to the segmentation repository
+  script:    "scripts/segment.py"        # Entry point in the segmentation repo
+  config:    "configs/segment_config.yaml"
+
+  # The segmentation script receives the Stage 1 JSON as its input.
+  # It reads the "flagged_images" list and generates masks for each one.
+  input_json: "results/ensemble/predictions/deployment_results.json"
+
+  # Where the segmentation masks and final report are saved.
+  output_dir: "results/segmentation"
+
+
+# ------------------------------------------------------------------------------
+# Pipeline settings
+# ------------------------------------------------------------------------------
+settings:
+  # If true, Stage 2 only runs if Stage 1 flagged at least one image.
+  skip_segmentation_if_no_flags: true
+
+  # If true, a summary report combining Stage 1 and Stage 2 results is
+  # generated after both stages complete.
+  generate_combined_report: true

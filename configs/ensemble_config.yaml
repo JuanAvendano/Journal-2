@@ -1,0 +1,63 @@
+
+# ==============================================================================
+# ensemble_config.yaml
+# ------------------------------------------------------------------------------
+# Configuration for running ensemble fusion methods and comparing their results.
+# This file is used by scripts/evaluate.py.
+#
+# The ensemble methods read the per-model prediction CSV files that were saved
+# during training. This means you do NOT need to re-run training to re-evaluate
+# the ensemble — you just re-run scripts/evaluate.py.
+#
+# Usage:
+#   python scripts/evaluate.py --config configs/ensemble_config.yaml
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# Class names
+# ------------------------------------------------------------------------------
+# Must be identical to the class_names list in train_config.yaml.
+# This is the single source of truth for label ordering in the ensemble.
+dataset:
+  class_names: ["crack", "efflorescence", "spalling", "undamaged"]
+  num_classes: 4
+
+
+# ------------------------------------------------------------------------------
+# Per-model prediction CSV files
+# ------------------------------------------------------------------------------
+# These CSV files are produced automatically at the end of training for each
+# model. Each file contains: image name, class probabilities, true label,
+# predicted label.
+#
+# 'latest' is a special keyword meaning: use the most recently created run
+# folder for that model. You can also provide an explicit timestamped path,
+# e.g. "results/training/vgg16/2026-03-19_14-32/predictions.csv"
+model_predictions:
+  vgg16:    "results/training/vgg16/latest/predictions/predictions.csv"
+  resnet50: "results/training/resnet50/latest/predictions/predictions.csv"
+  alexnet:  "results/training/alexnet/latest/predictions/predictions.csv"
+
+
+# ------------------------------------------------------------------------------
+# Fusion methods to run
+# ------------------------------------------------------------------------------
+# List the methods you want to evaluate. All listed methods will be run in a
+# single call to scripts/evaluate.py and their results will be compared.
+#
+# Supported values:
+#   "hard_voting"      - each model votes for its top class; majority wins
+#   "soft_voting"      - average the class probabilities across models
+#   "bayesian_fusion"  - sequential Bayesian update using each model in turn
+#   "sugeno_fuzzy"     - Sugeno fuzzy integral (to be implemented)
+#   "mlp_meta_learner" - MLP trained on stacked model outputs (to be implemented)
+ensemble:
+  methods: ["hard_voting", "soft_voting", "bayesian_fusion"]
+
+
+# ------------------------------------------------------------------------------
+# Output paths
+# ------------------------------------------------------------------------------
+results:
+  dir: "results/ensemble"   # Timestamped subfolder will be created inside this

@@ -1,0 +1,38 @@
+{
+    "overall": {
+        "accuracy": 0.8482,
+        "precision": 0.8606,
+        "recall": 0.8482,
+        "f1": 0.8502,
+        "f2": 0.8507
+    },
+    "per_class": {
+        "crack": {
+            "precision": 0.9252,
+            "recall": 0.8354,
+            "f1": 0.878,
+            "specificity": 0.9551
+        },
+        "efflorescence": {
+            "precision": 0.6905,
+            "recall": 0.9355,
+            "f1": 0.7945,
+            "specificity": 0.922
+        },
+        "spalling": {
+            "precision": 0.8803,
+            "recall": 0.8047,
+            "f1": 0.8408,
+            "specificity": 0.9699
+        },
+        "undamaged": {
+            "precision": 0.8456,
+            "recall": 0.8519,
+            "f1": 0.8487,
+            "specificity": 0.9541
+        }
+    },
+    "model": "alexnet",
+    "run_dir": "results\\training\\alexnet\\2026-03-20_02-00",
+    "config": "configs/train_config.yaml"
+}

@@ -1,0 +1,36 @@
+{
+    "overall": {
+        "accuracy": 0.8954,
+        "precision": 0.8959,
+        "recall": 0.8954,
+        "f1": 0.8954,
+        "f2": 0.8955
+    },
+    "per_class": {
+        "crack": {
+            "precision": 0.9053,
+            "recall": 0.9283,
+            "f1": 0.9167,
+            "specificity": 0.9354
+        },
+        "efflorescence": {
+            "precision": 0.8404,
+            "recall": 0.8495,
+            "f1": 0.8449,
+            "specificity": 0.97
+        },
+        "spalling": {
+            "precision": 0.8837,
+            "recall": 0.8906,
+            "f1": 0.8872,
+            "specificity": 0.9677
+        },
+        "undamaged": {
+            "precision": 0.9291,
+            "recall": 0.8741,
+            "f1": 0.9008,
+            "specificity": 0.9803
+        }
+    },
+    "method": "hard_voting"
+}

@@ -1,0 +1,22 @@
+2026-03-20 02:00:28 | __main__ | INFO | Run directory: results\training\alexnet\2026-03-20_02-00
+2026-03-20 02:00:28 | __main__ | INFO | Model:         alexnet
+2026-03-20 02:00:28 | __main__ | INFO | Config:        configs/train_config.yaml
+2026-03-20 02:00:28 | __main__ | INFO | Device: cuda
+2026-03-20 02:00:28 | __main__ | INFO | GPU: NVIDIA GeForce GTX 1660 SUPER
+2026-03-20 02:00:28 | __main__ | INFO | Loading datasets...
+2026-03-20 02:00:28 | __main__ | INFO | Loading model: alexnet
+2026-03-20 02:00:29 | __main__ | INFO | Total parameters:     57,020,228
+2026-03-20 02:00:29 | __main__ | INFO | Trainable parameters: 54,550,532 (95.7%)
+2026-03-20 02:00:29 | __main__ | INFO | Starting training...
+2026-03-20 02:04:28 | __main__ | INFO | Saving training curves...
+2026-03-20 02:04:28 | __main__ | INFO | Evaluating on test set...
+2026-03-20 02:04:32 | __main__ | INFO | Computing test set metrics...
+2026-03-20 02:04:32 | __main__ | INFO | Saving confusion matrix...
+2026-03-20 02:04:32 | __main__ | INFO | ============================================================
+2026-03-20 02:04:32 | __main__ | INFO | TRAINING COMPLETE
+2026-03-20 02:04:32 | __main__ | INFO |   Model:      alexnet
+2026-03-20 02:04:32 | __main__ | INFO |   Accuracy:   0.8482
+2026-03-20 02:04:32 | __main__ | INFO |   F1 Score:   0.8502
+2026-03-20 02:04:32 | __main__ | INFO |   F2 Score:   0.8507
+2026-03-20 02:04:32 | __main__ | INFO |   Run folder: results\training\alexnet\2026-03-20_02-00
+2026-03-20 02:04:32 | __main__ | INFO | ============================================================

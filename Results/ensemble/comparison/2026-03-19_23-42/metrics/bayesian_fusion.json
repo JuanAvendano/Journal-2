@@ -1,0 +1,36 @@
+{
+    "overall": {
+        "accuracy": 0.9005,
+        "precision": 0.9045,
+        "recall": 0.9005,
+        "f1": 0.9013,
+        "f2": 0.9013
+    },
+    "per_class": {
+        "crack": {
+            "precision": 0.9509,
+            "recall": 0.8987,
+            "f1": 0.9241,
+            "specificity": 0.9691
+        },
+        "efflorescence": {
+            "precision": 0.7982,
+            "recall": 0.9355,
+            "f1": 0.8614,
+            "specificity": 0.956
+        },
+        "spalling": {
+            "precision": 0.8828,
+            "recall": 0.8828,
+            "f1": 0.8828,
+            "specificity": 0.9677
+        },
+        "undamaged": {
+            "precision": 0.9167,
+            "recall": 0.8963,
+            "f1": 0.9064,
+            "specificity": 0.976
+        }
+    },
+    "method": "bayesian_fusion"
+}

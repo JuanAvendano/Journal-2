@@ -1,0 +1,9 @@
+Method,Accuracy,Precision,Recall,F1,F2
+soft_voting,0.8904,0.8905,0.8904,0.89,0.8904
+bayesian_vgg16_resnet50_alexnet,0.887,0.8875,0.887,0.8863,0.8871
+bayesian_vgg16_alexnet_resnet50,0.887,0.8875,0.887,0.8863,0.8871
+bayesian_resnet50_vgg16_alexnet,0.887,0.8875,0.887,0.8863,0.8871
+bayesian_resnet50_alexnet_vgg16,0.887,0.8875,0.887,0.8863,0.8871
+bayesian_alexnet_vgg16_resnet50,0.887,0.8875,0.887,0.8863,0.8871
+bayesian_alexnet_resnet50_vgg16,0.887,0.8875,0.887,0.8863,0.8871
+hard_voting,0.887,0.8907,0.887,0.8861,0.8878

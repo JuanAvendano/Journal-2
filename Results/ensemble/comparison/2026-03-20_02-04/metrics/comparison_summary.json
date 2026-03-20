@@ -1,0 +1,28 @@
+{
+    "methods": [
+        {
+            "Method": "hard_voting",
+            "Accuracy": 0.9106,
+            "Precision": 0.912,
+            "Recall": 0.9106,
+            "F1": 0.9109,
+            "F2": 0.9109
+        },
+        {
+            "Method": "soft_voting",
+            "Accuracy": 0.9073,
+            "Precision": 0.9109,
+            "Recall": 0.9073,
+            "F1": 0.908,
+            "F2": 0.908
+        },
+        {
+            "Method": "bayesian_fusion",
+            "Accuracy": 0.9089,
+            "Precision": 0.9166,
+            "Recall": 0.9089,
+            "F1": 0.9101,
+            "F2": 0.9105
+        }
+    ]
+}

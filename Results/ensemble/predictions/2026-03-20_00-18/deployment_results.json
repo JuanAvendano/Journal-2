@@ -1,0 +1,261 @@
+{
+    "run_info": {
+        "input_dir": "D:\\JCA\\07-Data\\01_Concrete\\DataEnsemble\\04-deploy",
+        "fusion_method": "soft_voting",
+        "threshold": 0.7,
+        "total_images": 20,
+        "flagged_count": 11,
+        "timestamp": "2026-03-20_00-18",
+        "class_names": [
+            "crack",
+            "efflorescence",
+            "spalling",
+            "undamaged"
+        ]
+    },
+    "flagged_images": [
+        {
+            "filename": "BCD-0001.jpg",
+            "prediction": "crack",
+            "confidence": 0.9171,
+            "all_probs": {
+                "crack": 0.9171,
+                "efflorescence": 0.0058,
+                "spalling": 0.0616,
+                "undamaged": 0.0156
+            }
+        },
+        {
+            "filename": "BCD-0002.jpg",
+            "prediction": "crack",
+            "confidence": 0.9816,
+            "all_probs": {
+                "crack": 0.9816,
+                "efflorescence": 0.0028,
+                "spalling": 0.0053,
+                "undamaged": 0.0102
+            }
+        },
+        {
+            "filename": "BCD-0014.jpg",
+            "prediction": "crack",
+            "confidence": 0.8988,
+            "all_probs": {
+                "crack": 0.8988,
+                "efflorescence": 0.0132,
+                "spalling": 0.0695,
+                "undamaged": 0.0186
+            }
+        },
+        {
+            "filename": "BCD-0024.jpg",
+            "prediction": "crack",
+            "confidence": 0.8006,
+            "all_probs": {
+                "crack": 0.8006,
+                "efflorescence": 0.0047,
+                "spalling": 0.0468,
+                "undamaged": 0.148
+            }
+        },
+        {
+            "filename": "CSPEE-0226.jpg",
+            "prediction": "spalling",
+            "confidence": 0.899,
+            "all_probs": {
+                "crack": 0.068,
+                "efflorescence": 0.0071,
+                "spalling": 0.899,
+                "undamaged": 0.026
+            }
+        },
+        {
+            "filename": "CSPEE-0563.jpg",
+            "prediction": "spalling",
+            "confidence": 0.8714,
+            "all_probs": {
+                "crack": 0.0938,
+                "efflorescence": 0.0115,
+                "spalling": 0.8714,
+                "undamaged": 0.0233
+            }
+        },
+        {
+            "filename": "CSPEE-1099.jpg",
+            "prediction": "spalling",
+            "confidence": 0.7773,
+            "all_probs": {
+                "crack": 0.2003,
+                "efflorescence": 0.0195,
+                "spalling": 0.7773,
+                "undamaged": 0.0029
+            }
+        },
+        {
+            "filename": "CSPEE-1106.jpg",
+            "prediction": "spalling",
+            "confidence": 0.7576,
+            "all_probs": {
+                "crack": 0.1982,
+                "efflorescence": 0.027,
+                "spalling": 0.7576,
+                "undamaged": 0.0173
+            }
+        },
+        {
+            "filename": "CSPEE-1132.jpg",
+            "prediction": "spalling",
+            "confidence": 0.798,
+            "all_probs": {
+                "crack": 0.1856,
+                "efflorescence": 0.0138,
+                "spalling": 0.798,
+                "undamaged": 0.0027
+            }
+        },
+        {
+            "filename": "dacl10k_v2_train_0634.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.7389,
+            "all_probs": {
+                "crack": 0.1083,
+                "efflorescence": 0.7389,
+                "spalling": 0.032,
+                "undamaged": 0.1207
+            }
+        },
+        {
+            "filename": "dacl10k_v2_train_0640.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.7003,
+            "all_probs": {
+                "crack": 0.0722,
+                "efflorescence": 0.7003,
+                "spalling": 0.1992,
+                "undamaged": 0.0282
+            }
+        }
+    ],
+    "all_predictions": [
+        {
+            "filename": "0s4jxkis.gkg.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.5746,
+            "flagged": false
+        },
+        {
+            "filename": "1jgzsqdn.5eh.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.8855,
+            "flagged": false
+        },
+        {
+            "filename": "BCD-0001.jpg",
+            "prediction": "crack",
+            "confidence": 0.9171,
+            "flagged": true
+        },
+        {
+            "filename": "BCD-0002.jpg",
+            "prediction": "crack",
+            "confidence": 0.9816,
+            "flagged": true
+        },
+        {
+            "filename": "BCD-0003.jpg",
+            "prediction": "spalling",
+            "confidence": 0.5273,
+            "flagged": false
+        },
+        {
+            "filename": "BCD-0014.jpg",
+            "prediction": "crack",
+            "confidence": 0.8988,
+            "flagged": true
+        },
+        {
+            "filename": "BCD-0023.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.4463,
+            "flagged": false
+        },
+        {
+            "filename": "BCD-0024.jpg",
+            "prediction": "crack",
+            "confidence": 0.8006,
+            "flagged": true
+        },
+        {
+            "filename": "BCD-1554.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.7204,
+            "flagged": false
+        },
+        {
+            "filename": "BCD-1610.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.4887,
+            "flagged": false
+        },
+        {
+            "filename": "CSPEE-0226.jpg",
+            "prediction": "spalling",
+            "confidence": 0.899,
+            "flagged": true
+        },
+        {
+            "filename": "CSPEE-0563.jpg",
+            "prediction": "spalling",
+            "confidence": 0.8714,
+            "flagged": true
+        },
+        {
+            "filename": "CSPEE-1099.jpg",
+            "prediction": "spalling",
+            "confidence": 0.7773,
+            "flagged": true
+        },
+        {
+            "filename": "CSPEE-1106.jpg",
+            "prediction": "spalling",
+            "confidence": 0.7576,
+            "flagged": true
+        },
+        {
+            "filename": "CSPEE-1132.jpg",
+            "prediction": "spalling",
+            "confidence": 0.798,
+            "flagged": true
+        },
+        {
+            "filename": "dacl10k_v2_train_0629.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.9242,
+            "flagged": false
+        },
+        {
+            "filename": "dacl10k_v2_train_0634.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.7389,
+            "flagged": true
+        },
+        {
+            "filename": "dacl10k_v2_train_0638.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.3946,
+            "flagged": false
+        },
+        {
+            "filename": "dacl10k_v2_train_0639.jpg",
+            "prediction": "undamaged",
+            "confidence": 0.414,
+            "flagged": false
+        },
+        {
+            "filename": "dacl10k_v2_train_0640.jpg",
+            "prediction": "efflorescence",
+            "confidence": 0.7003,
+            "flagged": true
+        }
+    ]
+}

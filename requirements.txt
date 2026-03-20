@@ -1,0 +1,42 @@
+# ==============================================================================
+# requirements.txt
+# ------------------------------------------------------------------------------
+# Python package dependencies for the Journal-2 ensemble repository.
+#
+# Install all dependencies with:
+#   pip install -r requirements.txt
+#
+# Note on PyTorch and CUDA:
+#   PyTorch must be installed separately with the correct CUDA version for
+#   your system. The line below is for CUDA 12.4 (the version used during
+#   development). Visit https://pytorch.org/get-started/locally/ to get the
+#   correct install command for your setup.
+#
+#   pip install torch==2.10.1 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu124
+#
+# ==============================================================================
+
+# Deep learning
+# torch and torchvision are installed separately (see note above)
+# torch==2.10.1
+# torchvision==0.25.0
+
+# Data handling
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Machine learning utilities (metrics, confusion matrix)
+scikit-learn>=1.3.0
+
+# Visualisation
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Image loading (used in deploy.py for unlabelled images)
+Pillow>=9.0.0
+
+# Config file parsing
+PyYAML>=6.0
+
+# Progress bars (optional but useful for long training runs)
+tqdm>=4.65.0

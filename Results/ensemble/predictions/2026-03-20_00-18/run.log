@@ -1,0 +1,34 @@
+2026-03-20 00:18:14 | __main__ | INFO | Deploy run — 2026-03-20_00-18
+2026-03-20 00:18:14 | __main__ | INFO | Input directory:  D:\JCA\07-Data\01_Concrete\DataEnsemble\04-deploy
+2026-03-20 00:18:14 | __main__ | INFO | Fusion method:    soft_voting
+2026-03-20 00:18:14 | __main__ | INFO | Threshold:        0.7
+2026-03-20 00:18:14 | __main__ | INFO | Device: cuda
+2026-03-20 00:18:14 | __main__ | INFO | Loading vgg16...
+2026-03-20 00:18:16 | __main__ | INFO |   Running inference on 20 images...
+2026-03-20 00:18:17 | __main__ | INFO |   vgg16 done.
+2026-03-20 00:18:17 | __main__ | INFO | Loading resnet50...
+2026-03-20 00:18:17 | __main__ | INFO |   Running inference on 20 images...
+2026-03-20 00:18:17 | __main__ | INFO |   resnet50 done.
+2026-03-20 00:18:17 | __main__ | INFO | Loading alexnet...
+2026-03-20 00:18:18 | __main__ | INFO |   Running inference on 20 images...
+2026-03-20 00:18:18 | __main__ | INFO |   alexnet done.
+2026-03-20 00:18:18 | __main__ | INFO | Applying fusion: soft_voting...
+2026-03-20 00:18:18 | __main__ | INFO | Building output JSON...
+2026-03-20 00:18:18 | __main__ | INFO | ============================================================
+2026-03-20 00:18:18 | __main__ | INFO | DEPLOYMENT COMPLETE
+2026-03-20 00:18:18 | __main__ | INFO |   Total images processed: 20
+2026-03-20 00:18:18 | __main__ | INFO |   Flagged as damaged:     11 (55.0%)
+2026-03-20 00:18:18 | __main__ | INFO |   Output JSON:            results\ensemble\predictions\2026-03-20_00-18\deployment_results.json
+2026-03-20 00:18:18 | __main__ | INFO | ============================================================
+2026-03-20 00:18:18 | __main__ | INFO | Flagged images (top 10):
+2026-03-20 00:18:18 | __main__ | INFO |   BCD-0001.jpg                   crack           conf: 0.917
+2026-03-20 00:18:18 | __main__ | INFO |   BCD-0002.jpg                   crack           conf: 0.982
+2026-03-20 00:18:18 | __main__ | INFO |   BCD-0014.jpg                   crack           conf: 0.899
+2026-03-20 00:18:18 | __main__ | INFO |   BCD-0024.jpg                   crack           conf: 0.801
+2026-03-20 00:18:18 | __main__ | INFO |   CSPEE-0226.jpg                 spalling        conf: 0.899
+2026-03-20 00:18:18 | __main__ | INFO |   CSPEE-0563.jpg                 spalling        conf: 0.871
+2026-03-20 00:18:18 | __main__ | INFO |   CSPEE-1099.jpg                 spalling        conf: 0.777
+2026-03-20 00:18:18 | __main__ | INFO |   CSPEE-1106.jpg                 spalling        conf: 0.758
+2026-03-20 00:18:18 | __main__ | INFO |   CSPEE-1132.jpg                 spalling        conf: 0.798
+2026-03-20 00:18:18 | __main__ | INFO |   dacl10k_v2_train_0634.jpg      efflorescence   conf: 0.739
+2026-03-20 00:18:18 | __main__ | INFO |   ... and 1 more. See results\ensemble\predictions\2026-03-20_00-18\deployment_results.json for full list.
