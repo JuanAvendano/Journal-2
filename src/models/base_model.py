@@ -318,6 +318,7 @@ def train_model(
     # Tracking variables
     # ------------------------------------------------------------------
     best_val_accuracy  = 0.0   # Track the best validation accuracy seen so far
+    best_val_loss = 0.0        # Track the best validation loss seen so far
     epochs_no_improve  = 0     # Counter for early stopping
 
     # History lists — one entry appended per epoch.
@@ -409,6 +410,10 @@ def train_model(
             logger.info(f"  Validation accuracy improved "
                         f"({best_val_accuracy:.4f} → {val_acc:.4f}). Saving best.pth")
             best_val_accuracy = val_acc
+        # if val_loss < best_val_loss:
+        #     logger.info(f"  Validation loss improved "
+        #                 f"({best_val_loss:.4f} → {val_loss:.4f}). Saving best.pth")
+        #     best_val_loss = val_loss
 
             epochs_no_improve = 0   # Reset the early stopping counter
 
