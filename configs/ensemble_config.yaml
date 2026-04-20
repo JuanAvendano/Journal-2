@@ -53,7 +53,7 @@ model_predictions:
 #   "sugeno_fuzzy"     - Sugeno fuzzy integral (to be implemented)
 #   "mlp_meta_learner" - MLP trained on stacked model outputs (to be implemented)
 ensemble:
-  methods: ["hard_voting", "soft_voting", "bayesian_fusion"]
+  methods: ["hard_voting", "soft_voting", "bayesian_fusion", "sugeno_fuzzy"]
 
 
 # ------------------------------------------------------------------------------
