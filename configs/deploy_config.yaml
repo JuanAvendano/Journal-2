@@ -9,8 +9,7 @@
 # No ground truth labels are needed or expected in this mode.
 #
 # Usage (standalone):
-#   python scripts/deploy.py --config configs/deploy_config.yaml
-#                            --input path/to/new/images
+#   python scripts/deploy.py --config configs/deploy_config.yaml --input D:/JCA/07-Data/01_Concrete/Roboflow_efflorescence/Efflorescence.coco-segmentation/train/ path/to/new/images
 #
 # Usage (via pipeline):
 #   The pipeline.yaml at the repo root calls this script automatically.
