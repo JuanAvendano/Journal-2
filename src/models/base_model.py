@@ -438,7 +438,7 @@ def train_model(
         # Always save the most recent weights as last.pth, overwriting
         # the previous one. This lets you resume training from the last
         # epoch if needed, even if it wasn't the best epoch.
-        save_checkpoint(model, save_dir, "last.pth")
+        # save_checkpoint(model, save_dir, "last.pth")
 
         # ==============================================================
         # Early stopping check
