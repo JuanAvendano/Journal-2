@@ -35,15 +35,15 @@ from collections import defaultdict
 
 # Absolute (or relative) paths
 SOURCE_ROOT = Path(r"D:\JCA\07-Data\01_Concrete\02-total_compilation")
-TARGET_ROOT = Path(r"D:\JCA\07-Data\01_Concrete\DataEnsemble_v3")
+TARGET_ROOT = Path(r"D:\JCA\07-Data\01_Concrete\03-experiment_datasets\A\A4")
 
 # Reproducibility
 RANDOM_SEED = 42
 
 # ── Split ratios (must sum to 1.0) ───────────────────────────
-TRAIN_RATIO = 0.70   # proportion of non-test images → train
-VAL_RATIO   = 0.15   # proportion of non-test images → validation
-TEST_RATIO  = 0.15   # proportion of total images    → test
+TRAIN_RATIO = 0.80   # proportion of non-test images → train
+VAL_RATIO   = 0.20   # proportion of non-test images → validation
+TEST_RATIO  = 0.0   # proportion of total images    → test
 # (TRAIN_RATIO + VAL_RATIO + TEST_RATIO must equal 1.0)
 
 # ── Supported image extensions ────────────────────────────────
@@ -67,10 +67,10 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif"}
 #
 CLASS_CONFIG = {
     #  folder name          max_images   weight
-    "Crack":        {"max_images": 500,  "weight": 1.0},
-    "Efflorescence":{"max_images": 500,  "weight": 1.0},
-    "Spalling":     {"max_images": 500,  "weight": 1.0},
-    "Undamaged":    {"max_images": 500,  "weight": 1.0},
+    "Crack":        {"max_images": 3500,  "weight": 1.0},
+    "Undamaged":    {"max_images": 3500,  "weight": 1.0},
+    "Efflorescence":{"max_images": 3500,  "weight": 1.0},
+    "Spalling":     {"max_images": 3500,  "weight": 1.0},
 }
 
 # ── Clean behaviour ──────────────────────────────────────────
