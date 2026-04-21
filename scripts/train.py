@@ -236,7 +236,8 @@ def main():
     # requires_grad=True — i.e. only the unfrozen layers.
     optimizer = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
-        lr=config["training"]["learning_rate"]
+        lr=config["training"]["learning_rate"],
+        weight_decay=config["training"]["weight_decay"]
     )
 
     # ------------------------------------------------------------------
