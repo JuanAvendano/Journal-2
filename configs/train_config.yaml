@@ -17,9 +17,9 @@
 # Use forward slashes or double backslashes on Windows.
 # Example: C:/Users/jcac/OneDrive - KTH/Datasets/DataEnsemble/01-train
 paths:
-  train:      "D:/JCA/07-Data/01_Concrete/DataEnsemble_v2/01-train/"         # Folder with class subfolders for training
-  val:        "D:/JCA/07-Data/01_Concrete/DataEnsemble_v2/02-validation/"    # Folder with class subfolders for validation
-  test:       "D:/JCA/07-Data/01_Concrete/DataEnsemble_v2/03-test/"          # Folder with class subfolders for testing
+  train:      "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/01-train/"         # Folder with class subfolders for training
+  val:        "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/02-validation/"    # Folder with class subfolders for validation
+  test:       "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/03-test/"          # Folder with class subfolders for testing
   saved_models: "saved_models/"       # Where best.pth and last.pth are saved
   results:    "results/training/"   # Where metrics, curves, confusion matrices go
 
@@ -67,8 +67,7 @@ model:
 #                Early stopping is applied if no improvement is seen.
 training:
   batch_size: 32
-  learning_rate: 0.00001
-  weight_decay: 0.0001
+  learning_rate: 0.001
   epochs: 50
 
 
@@ -79,7 +78,7 @@ training:
 # 'patience' consecutive epochs. This saves time and avoids overfitting.
 # Set 'enabled: false' to always run for the full number of epochs.
 early_stopping:
-  enabled: False
+  enabled: true
   patience: 10       # Stop after 10 epochs with no improvement
 
 
@@ -103,15 +102,10 @@ normalisation:
 # are NEVER augmented — only the training set.
 # Set 'enabled: false' to skip augmentation entirely.
 augmentation:
-  enabled: True
+  enabled: False
   horizontal_flip: true     # Randomly mirror images left-right
   vertical_flip: false      # Usually not useful for damage images
   rotation_degrees: 15      # Randomly rotate up to ±15 degrees
   colour_jitter: true       # Randomly vary brightness/contrast/saturation
   colour_jitter_strength: 0.2
-
-# Balanced sampling approach uses weighted sampling to oversample underrepresented
-# classes so each batch has roughly the same amount of images from each class.
-balanced_sampling:
-  enabled: True
 
