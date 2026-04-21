@@ -99,7 +99,7 @@ def soft_voting_batch(probs_arrays: list, weights: list = None) -> np.ndarray:
     """
     Apply soft voting across a full dataset (batch of images).
 
-    This is the function called by scripts/evaluate.py and scripts/deploy.py.
+    This is the function called by scripts/ensemble_eval.py and scripts/deploy.py.
 
     Parameters
     ----------

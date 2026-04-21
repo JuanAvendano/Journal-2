@@ -140,7 +140,7 @@ def plot_confusion_matrix_grid(
     """
     Plot multiple confusion matrices side by side in a grid layout.
 
-    Useful for the ensemble comparison in scripts/evaluate.py — you can
+    Useful for the ensemble comparison in scripts/ensemble_eval.py — you can
     see all fusion methods' confusion matrices at a glance.
 
     Parameters

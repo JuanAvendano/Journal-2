@@ -1,6 +1,6 @@
 """
 Created on Thursday Mar 19 2026
-scripts/evaluate.py
+scripts/ensemble_eval.py
 ------------------------------------------------------------------------------
 Entry point for ensemble evaluation.
 
@@ -13,13 +13,13 @@ a slightly different workflow from the other methods because it needs to be
 trained before it can make predictions.
 
 Usage:
-    python scripts/evaluate.py --config configs/ensemble_config.yaml
+    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml
 
     # To also display plots interactively:
-    python scripts/evaluate.py --config configs/ensemble_config.yaml --show_plots
+    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --show_plots
 
     # To include the MLP meta-learner (trains it on the fly):
-    python scripts/evaluate.py --config configs/ensemble_config.yaml --train_mlp
+    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp
 
 Output structure (one timestamped folder per run):
     results/ensemble/2026-03-19_15-00/

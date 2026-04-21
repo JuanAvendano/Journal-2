@@ -89,7 +89,7 @@ def hard_voting_batch(probs_arrays: list) -> np.ndarray:
     """
     Apply hard voting across a full dataset (batch of images).
 
-    This is the function called by scripts/evaluate.py and scripts/deploy.py.
+    This is the function called by scripts/ensemble_eval.py and scripts/deploy.py.
     It processes all images at once rather than one at a time.
 
     Parameters

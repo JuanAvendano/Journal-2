@@ -52,7 +52,7 @@ input_sizes:
 # Fusion method
 # ------------------------------------------------------------------------------
 # Which ensemble method to use for combining model outputs in deployment.
-# Choose the method that performed best during evaluate.py.
+# Choose the method that performed best during ensemble_eval.py.
 # Supported: "hard_voting", "soft_voting", "bayesian_fusion"
 ensemble:
   method: "soft_voting"

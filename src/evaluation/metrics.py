@@ -197,7 +197,7 @@ def build_comparison_table(method_metrics: dict) -> list:
     Build a flat list of per-method summary rows suitable for saving to CSV
     or displaying as a table.
 
-    This is used by scripts/evaluate.py after running all ensemble methods
+    This is used by scripts/ensemble_eval.py after running all ensemble methods
     to produce a side-by-side comparison.
 
     Parameters

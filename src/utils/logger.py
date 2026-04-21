@@ -95,7 +95,7 @@ def get_run_logger(run_dir: Path, module_name: str) -> logging.Logger:
     Convenience function that creates a logger and automatically saves its
     output to a 'training.log' file inside the run directory.
 
-    This is the function called by scripts/train.py and scripts/evaluate.py
+    This is the function called by scripts/train.py and scripts/ensemble_eval.py
     so that every run has a complete log file saved alongside its results.
 
     Parameters

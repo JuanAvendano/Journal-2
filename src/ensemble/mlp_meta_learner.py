@@ -192,7 +192,7 @@ def train_mlp(
     """
     Train the MLP meta-learner on stacked base model outputs.
 
-    This function is called by scripts/evaluate.py after loading the
+    This function is called by scripts/ensemble_eval.py after loading the
     validation set predictions from all three base models.
 
     Parameters

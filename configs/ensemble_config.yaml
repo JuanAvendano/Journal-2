@@ -3,14 +3,14 @@
 # ensemble_config.yaml
 # ------------------------------------------------------------------------------
 # Configuration for running ensemble fusion methods and comparing their results.
-# This file is used by scripts/evaluate.py.
+# This file is used by scripts/ensemble_eval.py.
 #
 # The ensemble methods read the per-model prediction CSV files that were saved
 # during training. This means you do NOT need to re-run training to re-evaluate
-# the ensemble — you just re-run scripts/evaluate.py.
+# the ensemble — you just re-run scripts/ensemble_eval.py.
 #
 # Usage:
-#   python scripts/evaluate.py --config configs/ensemble_config.yaml
+#   python scripts/ensemble_eval.py --config configs/ensemble_config.yaml
 # ==============================================================================
 
 
@@ -44,7 +44,7 @@ model_predictions:
 # Fusion methods to run
 # ------------------------------------------------------------------------------
 # List the methods you want to evaluate. All listed methods will be run in a
-# single call to scripts/evaluate.py and their results will be compared.
+# single call to scripts/ensemble_eval.py and their results will be compared.
 #
 # Supported values:
 #   "hard_voting"      - each model votes for its top class; majority wins

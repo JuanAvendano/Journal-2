@@ -187,10 +187,10 @@ Add `--show_plots` to display training curves interactively.
 
 **Run ensemble evaluation** (requires all models to have been trained):
 ```bash
-python scripts/evaluate.py --config configs/ensemble_config.yaml
+python scripts/ensemble_eval.py --config configs/ensemble_config.yaml
 
 # Include MLP meta-learner (trained on validation predictions):
-python scripts/evaluate.py --config configs/ensemble_config.yaml --train_mlp
+python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp
 ```
 
 **Deploy on new images:**

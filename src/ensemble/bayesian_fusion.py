@@ -108,7 +108,7 @@ def sequential_bayesian_batch(probs_arrays: list) -> np.ndarray:
     """
     Apply sequential Bayesian fusion across a full dataset (batch of images).
 
-    This is the function called by scripts/evaluate.py and scripts/deploy.py.
+    This is the function called by scripts/ensemble_eval.py and scripts/deploy.py.
 
     Parameters
     ----------
