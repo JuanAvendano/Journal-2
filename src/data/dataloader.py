@@ -16,11 +16,16 @@ Key concepts:
     parallel data loading (num_workers).
   - ImageFolderWithPaths: custom extension of ImageFolder that also
     returns the file path of each image, which we need to save to CSVs.
+  - WeightedRandomSampler: oversamples underrepresented classes so that
+    each batch sees roughly equal numbers of images from each class.
+    Controlled by balancing.balanced_sampling in train_config.yaml.
 """
 
 import os
+import torch
 from pathlib import Path
-from torch.utils.data import DataLoader
+from collections import Counter
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 
 from src.data.augmentations import get_train_transforms, get_eval_transforms
@@ -78,6 +83,167 @@ class ImageFolderWithPaths(ImageFolder):
 
 
 # ==============================================================================
+# Class count reporting
+# ==============================================================================
+
+def get_class_counts(dataset: ImageFolderWithPaths) -> dict:
+    """
+    Count the number of images per class in a dataset.
+
+    This is used to report dataset balance and to compute sampling weights
+    for WeightedRandomSampler.
+
+    Parameters
+    ----------
+    dataset : ImageFolderWithPaths
+        A loaded ImageFolder-based dataset.
+
+    Returns
+    -------
+    dict
+        Keys are class names, values are integer counts.
+        Example: {"crack": 400, "efflorescence": 300, "spalling": 200,
+                  "undamaged": 100}
+    """
+    # dataset.targets is a list of integer labels for every image in the
+    # dataset, in the same order as dataset.samples.
+    # Counter counts how many times each label appears.
+    label_counts = Counter(dataset.targets)
+
+    # Map integer labels back to class names using dataset.classes.
+    # dataset.classes is a list where index = label, value = class name.
+    return {
+        dataset.classes[label]: count
+        for label, count in sorted(label_counts.items())
+    }
+
+
+def print_class_distribution(counts: dict, split_name: str, total: int) -> None:
+    """
+    Print a formatted table showing the number and percentage of images
+    per class for a given dataset split, with a simple bar chart.
+
+    Example output:
+        Train set class distribution (1000 total):
+          crack          :  400 images  ( 40.0%)  ██████████████████████
+          efflorescence  :  300 images  ( 30.0%)  ████████████████
+          spalling       :  200 images  ( 20.0%)  ███████████
+          undamaged      :  100 images  ( 10.0%)  █████
+
+    Parameters
+    ----------
+    counts : dict
+        Class name → count, as returned by get_class_counts().
+    split_name : str
+        e.g. "Train", "Validation", "Test" — used in the header line.
+    total : int
+        Total number of images in this split.
+    """
+    print(f"\n  {split_name} set class distribution ({total} total):")
+
+    # Find the longest class name to align columns.
+    max_name_len = max(len(name) for name in counts)
+
+    # Scale bar length to the majority class.
+    max_count = max(counts.values())
+    bar_max_len = 25
+
+    for class_name, count in counts.items():
+        pct = 100.0 * count / total
+        bar_len = int(bar_max_len * count / max_count)
+        bar = "█" * bar_len
+
+        print(f"    {class_name:<{max_name_len}} : "
+              f"{count:>5} images  ({pct:>5.1f}%)  {bar}")
+
+
+def compute_balance_ratio(counts: dict) -> float:
+    """
+    Compute how imbalanced the dataset is as a ratio of max to min class count.
+
+    A ratio of 1.0 means perfectly balanced.
+    A ratio of 4.0 means the largest class has 4x more images than the smallest.
+
+    Parameters
+    ----------
+    counts : dict
+        Class name → count.
+
+    Returns
+    -------
+    float
+        max_count / min_count.
+    """
+    values = list(counts.values())
+    return max(values) / min(values) if min(values) > 0 else float("inf")
+
+
+# ==============================================================================
+# Balanced sampler
+# ==============================================================================
+
+def build_weighted_sampler(dataset: ImageFolderWithPaths) -> WeightedRandomSampler:
+    """
+    Build a WeightedRandomSampler that oversamples underrepresented classes.
+
+    How it works:
+      Each image is assigned a sampling weight inversely proportional to
+      how common its class is. Images from rare classes get higher weights
+      and are drawn more frequently during training.
+
+      Weight formula for class i:
+          weight_i = total_images / (num_classes * count_i)
+
+      Example: 4 classes, 1000 images, counts [400, 300, 200, 100]:
+          weight_crack         = 1000 / (4 * 400) = 0.625
+          weight_efflorescence = 1000 / (4 * 300) = 0.833
+          weight_spalling      = 1000 / (4 * 200) = 1.250
+          weight_undamaged     = 1000 / (4 * 100) = 2.500
+
+      The sampler draws 'total_images' samples per epoch with replacement,
+      so the number of training steps per epoch stays the same as without
+      balancing — only the class distribution within those steps changes.
+
+    Important: this does NOT create new images. It changes how frequently
+    existing images are drawn during each epoch.
+
+    Parameters
+    ----------
+    dataset : ImageFolderWithPaths
+        The training dataset.
+
+    Returns
+    -------
+    WeightedRandomSampler
+        Ready to pass to the DataLoader's 'sampler' argument.
+    """
+    label_counts = Counter(dataset.targets)
+    num_classes = len(dataset.classes)
+    total = len(dataset)
+
+    # Compute per-class weights — rare classes get higher weights.
+    class_weights = {
+        label: total / (num_classes * count)
+        for label, count in label_counts.items()
+    }
+
+    # Assign each individual image its class weight.
+    # dataset.targets[i] is the class label of the i-th image.
+    sample_weights = [class_weights[label] for label in dataset.targets]
+
+    # WeightedRandomSampler requires a DoubleTensor (float64).
+    weights_tensor = torch.DoubleTensor(sample_weights)
+
+    # num_samples=total keeps the epoch length the same as without balancing.
+    # replacement=True allows the same image to be drawn multiple times per
+    # epoch, which is necessary for oversampling minority classes.
+    return WeightedRandomSampler(
+        weights=weights_tensor,
+        num_samples=total,
+        replacement=True
+    )
+
+# ==============================================================================
 # DataLoader factory
 # ==============================================================================
 
@@ -113,6 +279,7 @@ def get_dataloaders(config: dict) -> dict:
     batch_size = train_cfg["batch_size"]
     input_size = model_cfg["input_size"]
 
+    balanced_sampling = config.get("balancing_sampling", {}).get("enabled", False)
     # -------------------------------------------------------------------------
     # Validate that data directories exist
     # -------------------------------------------------------------------------
@@ -164,29 +331,66 @@ def get_dataloaders(config: dict) -> dict:
         )
 
     # -------------------------------------------------------------------------
-    # Print dataset summary
+    # Count and report class distribution for all three splits
     # -------------------------------------------------------------------------
-    print(f"Classes detected: {dataset_classes}")
-    print(f"  Train samples:      {len(train_dataset)}")
-    print(f"  Validation samples: {len(val_dataset)}")
-    print(f"  Test samples:       {len(test_dataset)}")
+    train_counts = get_class_counts(train_dataset)
+    val_counts = get_class_counts(val_dataset)
+    test_counts = get_class_counts(test_dataset)
+
+    print(f"\n{'=' * 55}")
+    print(f"  DATASET SUMMARY")
+    print(f"{'=' * 55}")
+
+    print_class_distribution(train_counts, "Train", len(train_dataset))
+    print_class_distribution(val_counts, "Validation", len(val_dataset))
+    print_class_distribution(test_counts, "Test", len(test_dataset))
+
+    # Report the imbalance ratio for the training set and advise accordingly.
+    ratio = compute_balance_ratio(train_counts)
+    print(f"\n  Train imbalance ratio (max/min): {ratio:.2f}x")
+
+    if ratio > 2.0 and not balanced_sampling:
+        print(f"  WARNING: Imbalance ratio > 2.0. Consider setting "
+              f"balancing.balanced_sampling: true in train_config.yaml.")
+    elif balanced_sampling:
+        print(f"  Balanced sampling: ENABLED")
+    else:
+        print(f"  Balanced sampling: disabled (dataset is reasonably balanced)")
+
+    print(f"{'=' * 55}\n")
 
     # -------------------------------------------------------------------------
     # Create DataLoaders
     # -------------------------------------------------------------------------
+    # When using WeightedRandomSampler, shuffle must be False — the sampler
+    # itself handles randomisation. Passing shuffle=True alongside a sampler
+    # raises an error in PyTorch.
+    # Val and test loaders are never balanced — evaluation must reflect the
+    # real class distribution to give meaningful metrics.
     # num_workers controls how many CPU subprocesses are used to load data
     # in parallel while the GPU trains. On Windows, num_workers > 0 can cause
     # issues with some setups — if you get errors, set it to 0.
     # shuffle=True for training ensures images are in a random order each epoch.
     # shuffle=False for val/test ensures deterministic evaluation.
 
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,         # Set to 0 for Windows compatibility
-        pin_memory=True        # pin_memory=True speeds up CPU-to-GPU transfers
-    )
+    if balanced_sampling:
+        sampler = build_weighted_sampler(train_dataset)
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            shuffle=False,  # must be False when using a sampler
+            num_workers=0,
+            pin_memory=True
+        )
+    else:
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=0,         # Set to 0 for Windows compatibility
+            pin_memory=True        # pin_memory=True speeds up CPU-to-GPU transfers
+        )
     val_loader = DataLoader(
         val_dataset,
         batch_size=batch_size,
@@ -235,12 +439,11 @@ def get_deploy_dataloader(image_dir: str, config: dict) -> DataLoader:
     """
     input_size = config["input_sizes"]["vgg16"]   # Deployment uses VGG16 size as default
 
-    # Use eval transforms (no augmentation) — we are doing inference, not training.
     norm_cfg = config.get("normalisation", {})
-    from src.data.augmentations import get_eval_transforms
-    eval_transform = get_eval_transforms(input_size, {"normalisation": norm_cfg})
 
-    dataset = ImageFolderWithPaths(root=image_dir, transform=eval_transform)
+    transform = get_eval_transforms(input_size, {"normalisation": norm_cfg})
+
+    dataset = ImageFolderWithPaths(root=image_dir, transform=transform)
 
     loader = DataLoader(
         dataset,
