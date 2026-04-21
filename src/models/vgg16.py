@@ -84,8 +84,13 @@ def load_vgg16(num_classes: int, device) -> nn.Module:
     # model.classifier[6].in_features retrieves the input size of the original
     # layer (4096), so we don't have to hardcode it.
     in_features = model.classifier[6].in_features
-    model.classifier[6] = nn.Linear(in_features, num_classes)
-
+    # model.classifier[6] = nn.Linear(in_features, num_classes)
+    model.classifier = nn.Sequential(
+        nn.Linear(25088, 512),
+        nn.ReLU(),
+        nn.Dropout(p=0.65),
+        nn.Linear(512, num_classes)
+    )
     # Move the model to the target device (GPU if available).
     model = model.to(device)
 
