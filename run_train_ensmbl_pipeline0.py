@@ -1,5 +1,5 @@
 """
-run_pipeline0.py
+run_train_ensmbl_pipeline0.py
 ------------------------------------------------------------------------------
 Pipeline runner — trains CNN models sequentially and runs ensemble evaluation.
 
@@ -7,7 +7,7 @@ Edit the configuration section below to control what the pipeline does.
 No command-line arguments are needed for normal use — just set the options
 here and run:
 
-    python run_pipeline0.py
+    python run_train_ensmbl_pipeline0.py
 
 The pipeline delegates to the existing scripts:
     scripts/train.py      ← handles one model training run
