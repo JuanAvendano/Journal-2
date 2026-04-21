@@ -75,9 +75,15 @@ def load_alexnet(num_classes: int, device) -> nn.Module:
     # -------------------------------------------------------------------------
     # AlexNet's classifier[6] is the final layer, same index as VGG16.
     # in_features is 4096.
-    in_features = model.classifier[6].in_features
-    model.classifier[6] = nn.Linear(in_features, num_classes)
-
+    in_features = model.classifier[1].in_features
+    # model.classifier[6] = nn.Linear(in_features, num_classes)
+    model.classifier = nn.Sequential(
+        nn.Dropout(p=0.65),
+        nn.Linear(in_features, 512),
+        nn.ReLU(),
+        nn.Dropout(p=0.65),
+        nn.Linear(512, num_classes)
+    )
     # Move the model to the target device.
     model = model.to(device)
 
