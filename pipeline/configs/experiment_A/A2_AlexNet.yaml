@@ -1,0 +1,21 @@
+experiment_id: A2_ALEXNET
+group: A
+model: alexnet
+train_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A2/01-train/
+val_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A2/02-validation/
+test_set_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/Test/
+num_classes: 4
+class_names:
+- crack
+- efflorescence
+- spalling
+- undamaged
+class_weights:
+- 1.0
+- 1.0
+- 1.0
+- 1.0
+epochs: 50
+batch_size: 32
+learning_rate: 0.0001
+random_seed: 42
