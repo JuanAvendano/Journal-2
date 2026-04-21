@@ -78,10 +78,10 @@ def load_alexnet(num_classes: int, device) -> nn.Module:
     in_features = model.classifier[1].in_features
     # model.classifier[6] = nn.Linear(in_features, num_classes)
     model.classifier = nn.Sequential(
-        nn.Dropout(p=0.65),
+        nn.Dropout(p=0.5),
         nn.Linear(in_features, 512),
         nn.ReLU(),
-        nn.Dropout(p=0.65),
+        nn.Dropout(p=0.5),
         nn.Linear(512, num_classes)
     )
     # Move the model to the target device.
