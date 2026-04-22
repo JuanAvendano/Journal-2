@@ -90,13 +90,50 @@ def get_logger(name: str, log_file: Path = None) -> logging.Logger:
     return logger
 
 
-def get_run_logger(run_dir: Path, module_name: str) -> logging.Logger:
+def _log_config(logger: logging.Logger, data: dict, indent: int = 0) -> None:
+    """
+    Recursively log all key-value pairs from a config dictionary.
+
+    Nested dictionaries are indented so the hierarchy is easy to read
+    in the log file. For example, a config like:
+        {"training": {"lr": 0.001, "epochs": 50}, "model": "VGG16"}
+    will be logged as:
+        training:
+          lr: 0.001
+          epochs: 50
+        model: VGG16
+
+    Parameters
+    ----------
+    logger : logging.Logger
+        The logger to write to.
+    data : dict
+        The config dictionary (or sub-dictionary during recursion).
+    indent : int
+        Current indentation depth (increases by 1 for each nested level).
+    """
+    prefix = "  " * indent  # Two spaces per nesting level
+    for key, value in data.items():
+        if isinstance(value, dict):
+            # Nested section — log the key as a header, then recurse
+            logger.info(f"{prefix}{key}:")
+            _log_config(logger, value, indent + 1)
+        else:
+            logger.info(f"{prefix}{key}: {value}")
+
+
+def get_run_logger(run_dir: Path, module_name: str, config: dict = None) -> logging.Logger:
     """
     Convenience function that creates a logger and automatically saves its
-    output to a 'training.log' file inside the run directory.
+    output to a 'run.log' file inside the run directory.
 
     This is the function called by scripts/train.py and scripts/ensemble_eval.py
     so that every run has a complete log file saved alongside its results.
+
+    If a config dictionary is provided, its full contents are written at the
+    top of the log file. This makes every log file self-contained: you can
+    always trace back which parameters produced a given result, even after
+    modifying the config file multiple times.
 
     Parameters
     ----------
@@ -104,10 +141,40 @@ def get_run_logger(run_dir: Path, module_name: str) -> logging.Logger:
         The timestamped run directory created by io_utils.make_run_dir().
     module_name : str
         Typically passed as __name__ from the calling script.
+    config : dict, optional
+        The loaded config dictionary (e.g. from PyYAML). If provided, all
+        keys and values are written to the log file immediately after setup.
+        Nested dictionaries are indented for readability.
 
     Returns
     -------
     logging.Logger
+
+    Example
+    -------
+    In your train.py or ensemble_eval.py:
+
+        import yaml
+        from src.utils.logger import get_run_logger
+
+        with open("config.yaml") as f:
+            config = yaml.safe_load(f)
+
+        logger = get_run_logger(run_dir, __name__, config=config)
+        logger.info("Training started.")
     """
     log_file = run_dir / "run.log"
-    return get_logger(module_name, log_file=log_file)
+    logger = get_logger(module_name, log_file=log_file)
+
+    # ------------------------------------------------------------------
+    # Log the full config at the top of the file so every run is
+    # traceable even if the config file is changed between experiments.
+    # ------------------------------------------------------------------
+    if config is not None:
+        logger.info("=" * 60)
+        logger.info("RUN CONFIGURATION")
+        logger.info("=" * 60)
+        _log_config(logger, config)
+        logger.info("=" * 60)
+
+    return logger
