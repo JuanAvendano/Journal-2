@@ -178,7 +178,7 @@ def main():
     # ------------------------------------------------------------------
     # get_run_logger() creates a logger that writes to both the terminal
     # and a run.log file inside the run directory.
-    logger = get_run_logger(run_dir, __name__)
+    logger = get_run_logger(run_dir, __name__,config=config)
     logger.info(f"Run directory: {run_dir}")
     logger.info(f"Model:         {model_name}")
     logger.info(f"Config:        {args.config}")

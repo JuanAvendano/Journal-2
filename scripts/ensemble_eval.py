@@ -244,7 +244,7 @@ def main():
     # ------------------------------------------------------------------
     # 3. Set up logging
     # ------------------------------------------------------------------
-    logger = get_run_logger(run_dir, __name__)
+    logger = get_run_logger(run_dir, __name__,config=config)
     logger.info(f"Ensemble evaluation run directory: {run_dir}")
     logger.info(f"Config: {args.config}")
 
