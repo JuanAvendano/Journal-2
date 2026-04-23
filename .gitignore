@@ -1,3 +1,5 @@
 # Default ignored files
 z_old
 saved_models
+__pycache__/
+*.pyc
