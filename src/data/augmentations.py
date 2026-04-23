@@ -88,7 +88,19 @@ def get_train_transforms(input_size: int, config: dict) -> transforms.Compose:
             transform_list.append(
                 transforms.RandomRotation(degrees=rotation, fill=0)
             )
-
+        if aug_cfg.get("random_perspective", False):
+            distortion = aug_cfg.get("perspective_distortion", 0.3)
+            # Applies a random perspective (projective) transformation.
+            # This simulates off-angle camera shots — common in field inspection
+            # where the camera is rarely perfectly parallel to the surface.
+            # distortion_scale controls how extreme the warping can be:
+            #   0.0 = no change, 1.0 = very extreme warp. 0.2-0.4 is realistic.
+            transform_list.append(
+                transforms.RandomPerspective(
+                    distortion_scale=distortion,
+                    p=0.5  # Applied with 50% probability per image
+                )
+            )
     # -------------------------------------------------------------------------
     # Colour augmentations
     # -------------------------------------------------------------------------
@@ -107,7 +119,15 @@ def get_train_transforms(input_size: int, config: dict) -> transforms.Compose:
                                # too dramatically for concrete damage images.
                 )
             )
-
+        if aug_cfg.get("random_grayscale", False):
+            probability = aug_cfg.get("grayscale_probability", 0.2)
+            # Randomly converts the image to grayscale with the given probability.
+            # The output still has 3 channels (values are equal across R, G, B)
+            # so it remains compatible with models pretrained on RGB ImageNet.
+            # Useful for making the model robust to low-colour inspection photos.
+            transform_list.append(
+                transforms.RandomGrayscale(p=probability)
+            )
     # -------------------------------------------------------------------------
     # Mandatory final steps (always applied, regardless of augmentation setting)
     # -------------------------------------------------------------------------
