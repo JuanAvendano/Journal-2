@@ -43,15 +43,14 @@ MODE = "full"
 # Set enabled=True/False to include or exclude a model from training.
 # Order matters — models are trained in the order listed here.
 MODELS = [
-    {"name": "vgg16",    "enabled": True},
-    {"name": "resnet50", "enabled": True},
-    {"name": "alexnet",  "enabled": True},
+    {"name": "vgg16", "enabled": True, "config": "configs/train_config_VGG16.yaml"},
+    {"name": "resnet50", "enabled": True, "config": "configs/train_config_ResNet50.yaml"},
+    {"name": "alexnet", "enabled": True, "config": "configs/train_config_AlexNet.yaml"},
 ]
 
 # ------------------------------------------------------------------------------
 # Config paths
 # ------------------------------------------------------------------------------
-TRAIN_CONFIG    = "configs/train_config.yaml"
 ENSEMBLE_CONFIG = "configs/ensemble_config.yaml"
 
 # ------------------------------------------------------------------------------
@@ -153,6 +152,7 @@ def main():
         for model_cfg in MODELS:
             name    = model_cfg["name"]
             enabled = model_cfg.get("enabled", True)
+            config = model_cfg["config"]
 
             if not enabled:
                 print(f"  Skipping {name} (disabled in MODELS list).\n")
@@ -162,7 +162,7 @@ def main():
             cmd = [
                 sys.executable, "scripts/train.py",
                 "--model",  name,
-                "--config", TRAIN_CONFIG,
+                "--config", config,
             ]
             if SHOW_PLOTS:
                 cmd.append("--show_plots")

@@ -333,7 +333,7 @@ def main():
     # ------------------------------------------------------------------
     # 4. Set up logging
     # ------------------------------------------------------------------
-    logger = get_run_logger(run_dir, __name__)
+    logger = get_run_logger(run_dir, __name__,config=config)
     logger.info(f"Run directory  : {run_dir}")
     logger.info(f"Model          : {model_name}")
     logger.info(f"Pipeline mode  : {pipeline_mode}")
