@@ -1,9 +1,9 @@
 experiment_id: C_efflorescence_VGG16
 group: C
 model: vgg16
-train_path: C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A1/01-train/
-val_path: C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A1/02-validation/
-test_set_path: C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A1/03-test/
+train_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/C/C1/01-train/
+val_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/C/C1/02-validation/
+test_set_path: D:/JCA/07-Data/01_Concrete/03-experiment_datasets/C/C1/03-test/
 num_classes: 4
 class_names:
 - crack
@@ -15,7 +15,7 @@ class_weights:
 - 3.0
 - 1.0
 - 1.0
-epochs: 15
+epochs: 25
 batch_size: 32
 learning_rate: 0.00001
 weight_decay: 0.0001
