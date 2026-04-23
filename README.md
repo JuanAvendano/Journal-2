@@ -163,13 +163,13 @@ paths:
 Trains all models sequentially then runs ensemble evaluation in one command.
 Edit the configuration block at the top of `run_pipeline.py`, then:
 ```bash
-python run_pipeline0.py
+python run_train_ensmbl_pipeline0.py
 ```
 
 To run only training or only the ensemble step:
 ```bash
-# Edit MODE = "train_only" or MODE = "ensemble_only" in run_pipeline0.py
-python run_pipeline0.py
+# Edit MODE = "train_only" or MODE = "ensemble_only" in run_train_ensmbl_pipeline0.py
+python run_train_ensmbl_pipeline0.py
 ```
 
 To skip a specific model, set `"enabled": False` in the `MODELS` list

@@ -243,6 +243,8 @@ def evaluate_loss(
     float
         Scalar loss value.
     """
+    if hasattr(criterion, "weight") and criterion.weight is not None:
+        criterion.weight = criterion.weight.to(outputs.device)
     loss = criterion(outputs, labels)
     # .item() extracts the scalar value from a single-element tensor.
     return loss.item()
@@ -299,6 +301,9 @@ def train_model(
         Each is a list with one value per epoch. Used by plots.py to draw
         the learning curves.
     """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if hasattr(criterion, "weight") and criterion.weight is not None:
+        criterion.weight = criterion.weight.to(device)
     # Read settings from config
     num_epochs = config["training"]["epochs"]
     save_dir   = Path(config["paths"]["saved_models"]) / model_name
@@ -358,6 +363,9 @@ def train_model(
 
             # Forward pass: compute the model's predictions.
             outputs = model(inputs)
+
+            if hasattr(criterion, "weight") and criterion.weight is not None:
+                criterion.weight = criterion.weight.to(outputs.device)
 
             # Compute the loss between predictions and true labels.
             loss = criterion(outputs, labels)
@@ -505,6 +513,8 @@ def evaluate_final_model(
     model = load_checkpoint(model, checkpoint_path, device)
     model.to(device)
     model.eval()
+    if hasattr(criterion, "weight") and criterion.weight is not None:
+        criterion.weight = criterion.weight.to(device)
 
     class_names = config["dataset"]["class_names"]
 

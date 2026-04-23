@@ -34,10 +34,11 @@ dataset:
 # 'latest' is a special keyword meaning: use the most recently created run
 # folder for that model. You can also provide an explicit timestamped path,
 # e.g. "results/training/vgg16/2026-03-19_14-32/predictions.csv"
+# python scripts/ensemble_eval.py --config configs/ensemble_config.yaml
 model_predictions:
-  vgg16:    "results/training/vgg16/latest/predictions/predictions.csv"
-  resnet50: "results/training/resnet50/latest/predictions/predictions.csv"
-  alexnet:  "results/training/alexnet/latest/predictions/predictions.csv"
+  vgg16:    "results/training/vgg16/2026-04-21_17-11/predictions/predictions.csv"
+  resnet50: "results/training/resnet50/2026-04-22_00-57/predictions/predictions.csv"
+  alexnet:  "results/training/alexnet/2026-04-21_22-21/predictions/predictions.csv"
 
 
 # ------------------------------------------------------------------------------
