@@ -67,7 +67,8 @@ model:
 #                Early stopping is applied if no improvement is seen.
 training:
   batch_size: 32
-  learning_rate: 0.001
+  learning_rate: 0.00001
+  weight_decay: 0.001
   epochs: 50
 
 
@@ -102,7 +103,7 @@ normalisation:
 # are NEVER augmented — only the training set.
 # Set 'enabled: false' to skip augmentation entirely.
 augmentation:
-  enabled: False
+  enabled: True
   horizontal_flip: true     # Randomly mirror images left-right
   vertical_flip: false      # Usually not useful for damage images
   rotation_degrees: 15      # Randomly rotate up to ±15 degrees
