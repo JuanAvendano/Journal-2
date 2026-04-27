@@ -17,6 +17,8 @@ Usage:
     python scripts/train.py --model vgg16    --config configs/train_config.yaml
     python scripts/train.py --model resnet50 --config configs/train_config.yaml
     python scripts/train.py --model alexnet  --config configs/train_config.yaml
+    python scripts/train.py --model inceptionv3  --config configs/train_config_InceptionV3.yaml
+    python scripts/train.py --model efficientnet_b0 --config configs/train_config_EfficientNetB0.yaml
 
 Arguments:
     --model   : Which architecture to train. One of: vgg16, resnet50, alexnet.
@@ -31,7 +33,7 @@ Arguments:
 Output structure (one timestamped folder per run):
     results/training/vgg16/2026-03-19_14-32/
         predictions/
-            predictions.csv       ← best validation predictions (for ensemble)
+            predictions.csv       ← best validation predictions
             test_predictions.csv  ← test set predictions
         metrics/
             test_metrics.json     ← full metrics dict from calculate_metrics()
@@ -85,21 +87,33 @@ from src.evaluation.plots            import plot_training_curves
 from src.models.vgg16    import load_vgg16
 from src.models.resnet50 import load_resnet50
 from src.models.alexnet  import load_alexnet
+from src.models.inceptionv3     import load_inceptionv3      # NEW
+from src.models.efficientnet_b0 import load_efficientnet_b0
 
 MODEL_REGISTRY = {
     "vgg16":    load_vgg16,
     "resnet50": load_resnet50,
     "alexnet":  load_alexnet,
+    "inceptionv3": load_inceptionv3,
+    "efficientnet_b0": load_efficientnet_b0,
 }
 
 # Input sizes required by each architecture.
-# AlexNet needs 227x227; VGG16 and ResNet50 need 224x224.
-# This overrides whatever input_size is in the config when the model name
-# is passed via --model, ensuring the correct size is always used.
+# The correct input size is enforced here and overrides whatever is set in
+# the config, so you never accidentally train InceptionV3 on 224×224 images.
+#
+#   VGG16          → 224×224  (standard ImageNet size)
+#   ResNet50       → 224×224
+#   AlexNet        → 227×227  (implementation-corrected from the 224 in the paper)
+#   InceptionV3    → 299×299  (REQUIRED by the architecture; using 224 gives
+#                              wrong feature map sizes and degrades performance)
+#   EfficientNet-B0→ 224×224  (B0 baseline resolution)
 MODEL_INPUT_SIZES = {
     "vgg16":    224,
     "resnet50": 224,
     "alexnet":  227,
+    "inceptionv3":     299,   # NEW — must be 299, not 224
+    "efficientnet_b0": 224,
 }
 
 
@@ -128,7 +142,7 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         choices=list(MODEL_REGISTRY.keys()),   # Only allow valid model names
-        help="Model architecture to train. One of: vgg16, resnet50, alexnet."
+        help="Model architecture to train. One of: vgg16, resnet50, alexnet,inceptionv3, efficientnet_b0."
     )
     parser.add_argument(
         "--config",
@@ -157,8 +171,8 @@ def main():
     config = load_config(args.config)
 
     # Override the model name in the config with the CLI argument.
-    # This means you only need one config file — the --model flag selects
-    # the architecture, and the config provides all hyperparameters.
+    # MODEL_INPUT_SIZES is the single source of truth for input
+    # sizes — the YAML value is overridden here to prevent mismatches.
     model_name = args.model
     config["model"]["name"]       = model_name
     config["model"]["input_size"] = MODEL_INPUT_SIZES[model_name]
@@ -182,6 +196,7 @@ def main():
     logger.info(f"Run directory: {run_dir}")
     logger.info(f"Model:         {model_name}")
     logger.info(f"Config:        {args.config}")
+    logger.info(f"Input size:    {MODEL_INPUT_SIZES[model_name]}×{MODEL_INPUT_SIZES[model_name]}")
 
     # ------------------------------------------------------------------
     # 4. Detect device (GPU or CPU)
