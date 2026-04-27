@@ -24,19 +24,25 @@ Usage:
 Output structure (one timestamped folder per run):
     results/ensemble/2026-03-19_15-00/
         metrics/
+            vgg16.json                <- base model metrics (one per model)
+            resnet50.json
+            alexnet.json
             hard_voting.json
             soft_voting.json
             bayesian_fusion.json
             sugeno_fuzzy.json
-            mlp_meta_learner.json     ← only if --train_mlp is passed
-            comparison_summary.json   ← all methods side by side
-            comparison_summary.csv    ← same data, CSV format
+            mlp_meta_learner.json     <- only if --train_mlp is passed
+            comparison_summary.json   <- base models + all ensemble methods side by side
+            comparison_summary.csv    <- same data, CSV format
         confusion_matrices/
+            vgg16.png                 <- base model confusion matrices
+            resnet50.png
+            alexnet.png
             hard_voting.png
             soft_voting.png
             bayesian_fusion.png
             sugeno_fuzzy.png
-            confusion_matrices_comparison.png  ← all methods in one figure
+            confusion_matrices_comparison.png  <- all methods in one figure
         plots/
             ensemble_metric_comparison.png
             per_class_f1_comparison.png
@@ -277,16 +283,62 @@ def main():
     logger.info(f"Test images:   {len(true_labels)}")
 
     # ------------------------------------------------------------------
+    # 4b. Compute base-model metrics
+    # ------------------------------------------------------------------
+    # Each model's test_predictions.csv already contains its per-image
+    # predictions (the argmax the model produced at inference time).
+    # We compute the same metrics here so that the individual CNN results
+    # can be placed side-by-side with the ensemble methods in every output
+    # (comparison_summary.json/.csv, bar charts, per-class F1, log table).
+    #
+    # Keys use the model name as-is (e.g. "vgg16"), which is already distinct
+    # from ensemble method names ("hard_voting", "soft_voting", …).
+
+    logger.info("Computing base model metrics from test predictions...")
+
+    method_metrics = {}   # accumulates results for ALL methods + base models
+    cm_data        = {}   # true labels & predictions for confusion matrix plots
+
+    for model_name in model_names:
+        model_preds  = test_data[model_name]["predictions"]  # list[int], length N
+        model_true   = test_data[model_name]["true_labels"]  # list[int], length N
+
+        metrics          = calculate_metrics(model_preds, model_true, class_names)
+        metrics["method"] = model_name   # tag so build_comparison_table can label it
+
+        method_metrics[model_name] = metrics
+        cm_data[model_name] = {
+            "true_labels": model_true,
+            "predictions": model_preds,
+        }
+
+        # Save a per-model metrics JSON alongside the ensemble method JSONs.
+        metrics_dir = run_dir / "metrics"
+        metrics_dir.mkdir(parents=True, exist_ok=True)
+        save_json(metrics, metrics_dir / f"{model_name}.json")
+
+        # Save per-model confusion matrix PNG.
+        cm_dir = run_dir / "confusion_matrices"
+        plot_confusion_matrix(
+            true_labels = model_true,
+            predictions = model_preds,
+            class_names = class_names,
+            title       = model_name.upper(),
+            save_dir    = cm_dir,
+            filename    = f"{model_name}.png",
+            show        = args.show_plots
+        )
+
+        logger.info(
+            f"  {model_name} — Accuracy: {metrics['overall']['accuracy']:.4f} | "
+            f"F1: {metrics['overall']['f1']:.4f}"
+        )
+
+    # ------------------------------------------------------------------
     # 5. Run each ensemble method
     # ------------------------------------------------------------------
     methods_to_run = config["ensemble"]["methods"]
     logger.info(f"Running methods: {methods_to_run}")
-
-    # Dictionaries to accumulate results across all methods.
-    # method_metrics stores the full metrics dict per method.
-    # cm_data stores true labels and predictions per method for plotting.
-    method_metrics = {}
-    cm_data        = {}
 
     for method_name in methods_to_run:
 
