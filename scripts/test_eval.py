@@ -26,6 +26,8 @@ Usage:
     python scripts/test_eval.py --model vgg16    --weights saved_models/vgg16/best.pth    --config configs/train_config.yaml --test_dir D:/JCA/07-Data/01_Concrete/Test_set_dacl/
     python scripts/test_eval.py --model resnet50 --weights saved_models/resnet50/best.pth --config configs/train_config.yaml --test_dir D:/JCA/07-Data/01_Concrete/Test_set_dacl/
     python scripts/test_eval.py --model alexnet  --weights saved_models/alexnet/best.pth  --config configs/train_config.yaml --test_dir D:/JCA/07-Data/01_Concrete/Test_set_dacl/
+    python scripts/test_eval.py --model inceptionv3  --weights saved_models/inceptionv3/best.pth  --config configs/train_config.yaml --test_dir D:/JCA/07-Data/01_Concrete/Test_set_dacl/
+    python scripts/test_eval.py --model efficientnet_b0  --weights saved_models/efficientnet_b0/best.pth  --config configs/train_config.yaml --test_dir D:/JCA/07-Data/01_Concrete/Test_set_dacl/
 
 Arguments:
     --model    : Architecture to rebuild. One of: vgg16, resnet50, alexnet.
@@ -74,11 +76,15 @@ from src.evaluation.confusion_matrix import plot_confusion_matrix
 from src.models.vgg16    import load_vgg16
 from src.models.resnet50 import load_resnet50
 from src.models.alexnet  import load_alexnet
+from src.models.efficientnet_b0 import load_efficientnet_b0
+from src.models.inceptionv3 import load_inceptionv3
 
 MODEL_REGISTRY = {
     "vgg16":    load_vgg16,
     "resnet50": load_resnet50,
     "alexnet":  load_alexnet,
+    "inceptionv3": load_inceptionv3,
+    "efficientnet_b0": load_efficientnet_b0,
 }
 
 # Each architecture expects a specific input resolution.
@@ -87,6 +93,8 @@ MODEL_INPUT_SIZES = {
     "vgg16":    224,
     "resnet50": 224,
     "alexnet":  227,
+    "inceptionv3":  299,
+    "efficientnet_b0":  224,
 }
 
 
