@@ -23,6 +23,7 @@ import sys
 import time
 from datetime import datetime
 
+from src.ensemble.svm_meta_learner import train_svm
 
 # ==============================================================================
 # CONFIGURATION — edit this section before running
@@ -46,6 +47,8 @@ MODELS = [
     {"name": "vgg16", "enabled": True, "config": "configs/train_config_VGG16.yaml"},
     {"name": "resnet50", "enabled": True, "config": "configs/train_config_ResNet50.yaml"},
     {"name": "alexnet", "enabled": True, "config": "configs/train_config_AlexNet.yaml"},
+    {"name": "inceptionv3", "enabled": True, "config": "configs/train_config_Inceptionv3.yaml"},
+    {"name": "efficientnet_b0", "enabled": True, "config": "configs/train_config_EfficientNetB0.yaml"},
 ]
 
 # ------------------------------------------------------------------------------
@@ -61,7 +64,10 @@ ENSEMBLE_CONFIG = "configs/ensemble_config.yaml"
 CONTINUE_ON_FAILURE = True
 
 # If True, trains and evaluates the MLP meta-learner in the ensemble step.
-TRAIN_MLP = False
+TRAIN_MLP = True
+
+# If True, trains and evaluates the SVM meta-learner in the ensemble step.
+TRAIN_SVM = True
 
 # If True, plots are displayed interactively in addition to being saved.
 SHOW_PLOTS = False
@@ -127,6 +133,8 @@ def run_ensemble():
     ]
     if TRAIN_MLP:
         cmd.append("--train_mlp")
+    if TRAIN_SVM:
+        cmd.append("--train_svm")
     if SHOW_PLOTS:
         cmd.append("--show_plots")
 
