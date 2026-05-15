@@ -21,6 +21,9 @@ Usage:
     # To include the MLP meta-learner (trains it on the fly):
     python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp
 
+    # To include the SVM meta-learner:
+    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp --train_svm
+
 Output structure (one timestamped folder per run):
     results/ensemble/2026-03-19_15-00/
         metrics/
@@ -78,6 +81,7 @@ from src.ensemble.soft_voting      import soft_voting_batch
 from src.ensemble.bayesian_fusion  import sequential_bayesian_batch
 from src.ensemble.sugeno_fuzzy     import sugeno_fuzzy_batch
 from src.ensemble.mlp_meta_learner import train_mlp, mlp_predict
+from src.ensemble.svm_meta_learner import train_svm, svm_predict
 
 from src.evaluation.metrics          import calculate_metrics, build_comparison_table
 from src.evaluation.confusion_matrix import plot_confusion_matrix, plot_confusion_matrix_grid
@@ -123,6 +127,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Train and evaluate the MLP meta-learner. Requires all three "
              "models to have validation AND test prediction CSVs available."
+    )
+    parser.add_argument(
+        "--train_svm",
+        action="store_true",
+        help="Train and evaluate the SVM meta-learner. Requires all models "
+             "to have validation AND test prediction CSVs available."
     )
     return parser.parse_args()
 
@@ -415,11 +425,29 @@ def main():
 
             # Train MLP on validation predictions.
             mlp_save_path = run_dir / "mlp_weights.pth"
+
+            mlp_hidden_sizes = [64, 32]  # ← change here if you experiment
+            mlp_dropout = 0.3
+            mlp_lr = 0.0001
+            mlp_epochs = 200
+            mlp_batch_size = 32
+
+            logger.info("MLP meta-learner hyperparameters:")
+            logger.info(f"  hidden_sizes : {mlp_hidden_sizes}")
+            logger.info(f"  dropout      : {mlp_dropout}")
+            logger.info(f"  learning_rate: {mlp_lr}")
+            logger.info(f"  epochs       : {mlp_epochs}")
+            logger.info(f"  batch_size   : {mlp_batch_size}")
             mlp_model = train_mlp(
-                probs_arrays  = val_probs_arrays,
-                true_labels   = val_true_labels,
-                num_classes   = num_classes,
-                save_path     = mlp_save_path
+                probs_arrays=val_probs_arrays,
+                true_labels=val_true_labels,
+                num_classes=num_classes,
+                hidden_sizes=mlp_hidden_sizes,
+                dropout=mlp_dropout,
+                learning_rate=mlp_lr,
+                epochs=mlp_epochs,
+                batch_size=mlp_batch_size,
+                save_path=mlp_save_path
             )
 
             # Evaluate MLP on TEST predictions (the same test data used
@@ -454,6 +482,80 @@ def main():
                 f"F1: {mlp_metrics['overall']['f1']:.4f}"
             )
 
+    # ------------------------------------------------------------------
+    # 6b. SVM meta-learner (optional, requires --train_svm flag)
+    # ------------------------------------------------------------------
+    if args.train_svm or "svm_meta_learner" in methods_to_run:
+        logger.info("Training SVM meta-learner...")
+
+        # Load VALIDATION predictions to train the SVM.
+        # Reuse val_data if it was already loaded for the MLP; otherwise load it.
+        # (val_data may not exist if --train_mlp was not passed)
+        if "val_data" not in dir():
+            val_data = load_all_model_predictions(config, split="val", logger=logger)
+
+        if len(val_data) < 2:
+            logger.warning(
+                "Not enough validation prediction CSVs found. "
+                "Skipping SVM meta-learner."
+            )
+        elif not validate_image_alignment(val_data, logger):
+            logger.warning("Validation CSV alignment failed. Skipping SVM.")
+        else:
+            val_probs_arrays = [val_data[name]["probs"]  for name in model_names
+                                if name in val_data]
+            val_true_labels  = val_data[model_names[0]]["true_labels"]
+
+            # Train SVM on validation predictions.
+            svm_save_path = run_dir / "svm_pipeline.pkl"
+            svm_kernel = "rbf"
+            svm_C = 1.0
+            svm_gamma = "scale"
+
+            logger.info("SVM meta-learner hyperparameters:")
+            logger.info(f"  kernel: {svm_kernel}")
+            logger.info(f"  C     : {svm_C}")
+            logger.info(f"  gamma : {svm_gamma}")
+
+            svm_pipeline = train_svm(
+                probs_arrays=val_probs_arrays,
+                true_labels=val_true_labels,
+                kernel=svm_kernel,
+                C=svm_C,
+                gamma=svm_gamma,
+                save_path=svm_save_path
+            )
+
+            # Evaluate SVM on TEST predictions — same test data as all other methods.
+            test_probs_for_svm = [test_data[name]["probs"] for name in model_names
+                                  if name in test_data]
+            svm_probs       = svm_predict(svm_pipeline, test_probs_for_svm)
+            svm_predictions = svm_probs.argmax(axis=1).tolist()
+
+            svm_metrics = calculate_metrics(svm_predictions, true_labels, class_names)
+            svm_metrics["method"] = "svm_meta_learner"
+
+            method_metrics["svm_meta_learner"] = svm_metrics
+            cm_data["svm_meta_learner"] = {
+                "true_labels": true_labels,
+                "predictions": svm_predictions,
+            }
+
+            save_json(svm_metrics, run_dir / "metrics" / "svm_meta_learner.json")
+            plot_confusion_matrix(
+                true_labels = true_labels,
+                predictions = svm_predictions,
+                class_names = class_names,
+                title       = "SVM Meta-Learner",
+                save_dir    = run_dir / "confusion_matrices",
+                filename    = "svm_meta_learner.png",
+                show        = args.show_plots
+            )
+
+            logger.info(
+                f"  SVM — Accuracy: {svm_metrics['overall']['accuracy']:.4f} | "
+                f"F1: {svm_metrics['overall']['f1']:.4f}"
+            )
     # ------------------------------------------------------------------
     # 7. Save comparison summary
     # ------------------------------------------------------------------
