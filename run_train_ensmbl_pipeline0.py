@@ -69,6 +69,9 @@ TRAIN_MLP = True
 # If True, trains and evaluates the SVM meta-learner in the ensemble step.
 TRAIN_SVM = True
 
+# If True, uses the bma fusion that checks validation step results.
+RUN_BMA = True
+
 # If True, plots are displayed interactively in addition to being saved.
 SHOW_PLOTS = False
 
@@ -135,6 +138,8 @@ def run_ensemble():
         cmd.append("--train_mlp")
     if TRAIN_SVM:
         cmd.append("--train_svm")
+    if RUN_BMA:
+        cmd.append(" --run_bma")
     if SHOW_PLOTS:
         cmd.append("--show_plots")
 

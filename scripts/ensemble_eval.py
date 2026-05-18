@@ -21,8 +21,8 @@ Usage:
     # To include the MLP meta-learner (trains it on the fly):
     python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp
 
-    # To include the SVM meta-learner:
-    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp --train_svm
+    # To include the SVM meta-learner and BMA fusion:
+    python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp --train_svm --run_bma
 
 Output structure (one timestamped folder per run):
     results/ensemble/2026-03-19_15-00/
@@ -82,7 +82,7 @@ from src.ensemble.bayesian_fusion  import sequential_bayesian_batch
 from src.ensemble.sugeno_fuzzy     import sugeno_fuzzy_batch
 from src.ensemble.mlp_meta_learner import train_mlp, mlp_predict
 from src.ensemble.svm_meta_learner import train_svm, svm_predict
-
+from src.ensemble.bma_fusion import (compute_and_log_weights, compute_and_log_weights_per_class, bma_batch, bma_batch_per_class, )
 from src.evaluation.metrics          import calculate_metrics, build_comparison_table
 from src.evaluation.confusion_matrix import plot_confusion_matrix, plot_confusion_matrix_grid
 from src.evaluation.plots            import plot_metric_comparison, plot_per_class_comparison
@@ -133,6 +133,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Train and evaluate the SVM meta-learner. Requires all models "
              "to have validation AND test prediction CSVs available."
+    )
+    parser.add_argument(
+        "--run_bma",
+        action="store_true",
+        help="Compute BMA weights from the validation set and evaluate both "
+             "global BMA and per-class BMA on the test set."
     )
     return parser.parse_args()
 
@@ -400,7 +406,111 @@ def main():
             f"    Accuracy: {metrics['overall']['accuracy']:.4f} | "
             f"F1: {metrics['overall']['f1']:.4f}"
         )
+    # ------------------------------------------------------------------
+    # BMA — global and per-class (optional, requires --run_bma flag)
+    # ------------------------------------------------------------------
+    if args.run_bma:
+        logger.info("Running Bayesian Model Averaging (BMA)...")
 
+        # Load VALIDATION predictions to compute BMA weights.
+        val_data = load_all_model_predictions(config, split="val", logger=logger)
+
+        if len(val_data) < 2:
+            logger.warning("Not enough validation CSVs found. Skipping BMA.")
+        elif not validate_image_alignment(val_data, logger):
+            logger.warning("Validation CSV alignment failed. Skipping BMA.")
+        else:
+            val_probs_arrays = [val_data[name]["probs"] for name in model_names
+                                if name in val_data]
+            val_true_labels = val_data[model_names[0]]["true_labels"]
+
+            # ----------------------------------------------------------
+            # 3a. Global BMA
+            # One weight per model, derived from overall validation
+            # log-likelihood. Approaches soft voting when models are
+            # similar; concentrates weight on the best model when they
+            # differ significantly.
+            # ----------------------------------------------------------
+            logger.info("  --- Global BMA ---")
+            bma_weights = compute_and_log_weights(
+                val_probs_arrays=val_probs_arrays,
+                val_true_labels=val_true_labels,
+                model_names=model_names,
+                logger=logger,
+            )
+
+            bma_probs = bma_batch(probs_arrays, bma_weights)
+            bma_predictions = np.argmax(bma_probs, axis=1).tolist()
+
+            bma_metrics = calculate_metrics(bma_predictions, true_labels, class_names)
+            bma_metrics["method"] = "bma_global"
+
+            method_metrics["bma_global"] = bma_metrics
+            cm_data["bma_global"] = {
+                "true_labels": true_labels,
+                "predictions": bma_predictions,
+            }
+
+            save_json(bma_metrics, run_dir / "metrics" / "bma_global.json")
+            plot_confusion_matrix(
+                true_labels=true_labels,
+                predictions=bma_predictions,
+                class_names=class_names,
+                title="BMA Global",
+                save_dir=run_dir / "confusion_matrices",
+                filename="bma_global.png",
+                show=args.show_plots,
+            )
+
+            logger.info(
+                f"  Global BMA — Accuracy: {bma_metrics['overall']['accuracy']:.4f} | "
+                f"F1: {bma_metrics['overall']['f1']:.4f}"
+            )
+
+            # ----------------------------------------------------------
+            # 3b. Per-class BMA
+            # One weight per (model, class) pair. Exploits model
+            # specialisation: if VGG16 is best at spalling but ResNet50
+            # is best at cracks, per-class BMA uses each model where it
+            # is strongest. The weight matrix itself is a reportable result.
+            # ----------------------------------------------------------
+            logger.info("  --- Per-class BMA ---")
+            weight_matrix = compute_and_log_weights_per_class(
+                val_probs_arrays=val_probs_arrays,
+                val_true_labels=val_true_labels,
+                num_classes=num_classes,
+                model_names=model_names,
+                class_names=class_names,
+                logger=logger,
+            )
+
+            bma_pc_probs = bma_batch_per_class(probs_arrays, weight_matrix)
+            bma_pc_predictions = np.argmax(bma_pc_probs, axis=1).tolist()
+
+            bma_pc_metrics = calculate_metrics(bma_pc_predictions, true_labels, class_names)
+            bma_pc_metrics["method"] = "bma_per_class"
+
+            method_metrics["bma_per_class"] = bma_pc_metrics
+            cm_data["bma_per_class"] = {
+                "true_labels": true_labels,
+                "predictions": bma_pc_predictions,
+            }
+
+            save_json(bma_pc_metrics, run_dir / "metrics" / "bma_per_class.json")
+            plot_confusion_matrix(
+                true_labels=true_labels,
+                predictions=bma_pc_predictions,
+                class_names=class_names,
+                title="BMA Per-Class",
+                save_dir=run_dir / "confusion_matrices",
+                filename="bma_per_class.png",
+                show=args.show_plots,
+            )
+
+            logger.info(
+                f"  Per-class BMA — Accuracy: {bma_pc_metrics['overall']['accuracy']:.4f} | "
+                f"F1: {bma_pc_metrics['overall']['f1']:.4f}"
+            )
     # ------------------------------------------------------------------
     # 6. MLP meta-learner (optional, requires --train_mlp flag)
     # ------------------------------------------------------------------
@@ -429,7 +539,7 @@ def main():
             mlp_hidden_sizes = [64, 32]  # ← change here if you experiment
             mlp_dropout = 0.3
             mlp_lr = 0.0001
-            mlp_epochs = 200
+            mlp_epochs = 300
             mlp_batch_size = 32
 
             logger.info("MLP meta-learner hyperparameters:")
