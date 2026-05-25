@@ -13,12 +13,18 @@ run directory.
 Usage:
     python scripts/train.py --model vgg16 --config configs/train_config.yaml
 
-    # To train all three models sequentially (run this three times):
-    python scripts/train.py --model vgg16    --config configs/train_config.yaml
-    python scripts/train.py --model resnet50 --config configs/train_config.yaml
-    python scripts/train.py --model alexnet  --config configs/train_config.yaml
+    # To train all five models sequentially (run this five times):
+    python scripts/train.py --model vgg16    --config configs/train_config_vgg16.yaml
+    python scripts/train.py --model resnet50 --config configs/train_config_resnet50.yaml
+    python scripts/train.py --model alexnet  --config configs/train_config_alexnet.yaml
     python scripts/train.py --model inceptionv3  --config configs/train_config_InceptionV3.yaml
     python scripts/train.py --model efficientnet_b0 --config configs/train_config_EfficientNetB0.yaml
+
+    python scripts/train.py --model vgg16_v2    --config configs/train_config_vgg16.yaml
+    python scripts/train.py --model resnet50_v2 --config configs/train_config_resnet50.yaml
+    python scripts/train.py --model alexnet_v2  --config configs/train_config_alexnet.yaml
+    python scripts/train.py --model inceptionv3_v2  --config configs/train_config_InceptionV3.yaml
+    python scripts/train.py --model efficientnet_b0_v2 --config configs/train_config_EfficientNetB0.yaml
 
 Arguments:
     --model   : Which architecture to train. One of: vgg16, resnet50, alexnet.
@@ -87,15 +93,32 @@ from src.evaluation.plots            import plot_training_curves
 from src.models.vgg16    import load_vgg16
 from src.models.resnet50 import load_resnet50
 from src.models.alexnet  import load_alexnet
-from src.models.inceptionv3     import load_inceptionv3      # NEW
+from src.models.inceptionv3     import load_inceptionv3
 from src.models.efficientnet_b0 import load_efficientnet_b0
 
+# Version 2 loaders — same architectures, but with deeper unfreezing
+# (partial fine-tuning) to decorrelate the base learners' errors.
+# Train them with the SAME config files as the originals, e.g.:
+#   python scripts/train.py --model vgg16_v2 --config configs/train_config_VGG16.yaml
+from src.models.vgg16_v2           import load_vgg16_v2
+from src.models.resnet50_v2        import load_resnet50_v2
+from src.models.alexnet_v2         import load_alexnet_v2
+from src.models.inceptionv3_v2     import load_inceptionv3_v2
+from src.models.efficientnet_b0_v2 import load_efficientnet_b0_v2
+
 MODEL_REGISTRY = {
+    # Original (head-only) loaders
     "vgg16":    load_vgg16,
     "resnet50": load_resnet50,
     "alexnet":  load_alexnet,
     "inceptionv3": load_inceptionv3,
     "efficientnet_b0": load_efficientnet_b0,
+    # Version 2 (partial fine-tuning) loaders
+    "vgg16_v2":           load_vgg16_v2,
+    "resnet50_v2":        load_resnet50_v2,
+    "alexnet_v2":         load_alexnet_v2,
+    "inceptionv3_v2":     load_inceptionv3_v2,
+    "efficientnet_b0_v2": load_efficientnet_b0_v2,
 }
 
 # Input sizes required by each architecture.
@@ -112,8 +135,14 @@ MODEL_INPUT_SIZES = {
     "vgg16":    224,
     "resnet50": 224,
     "alexnet":  227,
-    "inceptionv3":     299,   # NEW — must be 299, not 224
+    "inceptionv3":     299,
     "efficientnet_b0": 224,
+    # Version 2 variants use the same input size as their originals.
+    "vgg16_v2":           224,
+    "resnet50_v2":        224,
+    "alexnet_v2":         227,
+    "inceptionv3_v2":     299,
+    "efficientnet_b0_v2": 224,
 }
 
 
@@ -142,7 +171,9 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         choices=list(MODEL_REGISTRY.keys()),   # Only allow valid model names
-        help="Model architecture to train. One of: vgg16, resnet50, alexnet,inceptionv3, efficientnet_b0."
+        help="Model architecture to train. Originals: vgg16, resnet50, alexnet, "
+             "inceptionv3, efficientnet_b0. Partial fine-tuning variants: "
+             "vgg16_v2, resnet50_v2, alexnet_v2, inceptionv3_v2, efficientnet_b0_v2."
     )
     parser.add_argument(
         "--config",
@@ -243,15 +274,39 @@ def main():
     # It combines a softmax activation with a negative log-likelihood loss,
     # so we do NOT apply softmax to the model output before passing it here.
     criterion = nn.CrossEntropyLoss()
+    logger.info(f"Loss function  : {criterion}")
 
-    # Adam (Adaptive Moment Estimation) is the standard optimiser for
-    # fine-tuning pretrained CNNs. It adapts the learning rate per parameter
-    # and is generally more robust than plain SGD for transfer learning.
-    # model.parameters() returns only the parameters that have
-    # requires_grad=True — i.e. only the unfrozen layers.
-    optimizer = optim.Adam(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=config["training"]["learning_rate"],
+    # Discriminative learning rates + AdamW.
+    # We split the TRAINABLE parameters into two groups:
+    #   - "backbone": the unfrozen conv block (block 5). Pretrained, so it
+    #     gets a small LR — we only want to gently adapt it, not overwrite it.
+    #   - "head": the new classifier. Randomly initialised, so it gets the
+    #     full LR to learn from scratch.
+    # named_parameters() yields (name, param). In VGG16/AlexNet the feature
+    # extractor is model.features, so its params' names start with "features.";
+    # the head is model.classifier. Filtering on requires_grad means the frozen
+    # blocks (1–4 in VGG16) are excluded automatically.
+    #
+    # NOTE: the "features." prefix is VGG16/AlexNet-specific. ResNet50, Inception and
+    # EfficientNet differ again, change would need to be done inside the model loader.
+    base_lr = config["training"]["learning_rate"]  # head LR
+
+    backbone_params = [p for n, p in model.named_parameters()
+                       if p.requires_grad and n.startswith("features.")]
+    head_params = [p for n, p in model.named_parameters()
+                   if p.requires_grad and not n.startswith("features.")]
+
+    # Only include a group if it actually has parameters. This keeps the same
+    # script working for v1 (fully frozen backbone) models, where backbone_params
+    # is empty and we just train the head at the full LR.
+    param_groups = []
+    if backbone_params:
+        param_groups.append({"params": backbone_params, "lr": base_lr * 0.1})  # conv block: 10x slower
+    if head_params:
+        param_groups.append({"params": head_params, "lr": base_lr})  # head: full LR
+
+    optimizer = optim.AdamW(
+        param_groups,
         weight_decay=config["training"]["weight_decay"]
     )
 
