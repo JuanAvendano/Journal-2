@@ -80,6 +80,12 @@ def compute_lambda(densities: list) -> float:
     total = sum(densities)
     if abs(total - 1.0) < 1e-9:
         return 0.0
+    # sum > 1  ->  redundant models, root in (-1, 0)
+    # sum < 1  ->  complementary models, root in (0, +inf)
+    if total > 1.0:
+        lo, hi = -1.0 + 1e-9, -1e-9
+    else:
+        lo, hi = 1e-9, 1e6
 
     # Define the equation we want to solve: f(lambda) = 0
     # f(lambda) = product(1 + lambda * d_i) - (1 + lambda)
