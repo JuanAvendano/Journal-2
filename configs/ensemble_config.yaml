@@ -10,7 +10,7 @@
 # the ensemble — you just re-run scripts/ensemble_eval.py.
 #
 # Usage:
-#   python scripts/ensemble_eval.py --config configs/ensemble_config.yaml
+#   python scripts/ensemble_eval.py --config configs/ensemble_config.yaml --train_mlp --train_svm --run_bma
 # ==============================================================================
 
 
@@ -42,12 +42,17 @@ model_predictions:
 #  inceptionv3: "results/test_eval/inceptionv3/latest/predictions/test_predictions.csv"
 #  efficientnet_b0: "results/test_eval/efficientnet_b0/latest/predictions/test_predictions.csv"
 
-  vgg16: "results/training/vgg16/2026-05-13_11-59/predictions/test_predictions.csv"
-  resnet50: "results/training/resnet50/2026-05-07_10-33/predictions/test_predictions.csv"
-  alexnet: "results/training/alexnet/2026-05-15_12-12/predictions/test_predictions.csv"
-  inceptionv3: "results/training/inceptionv3/2026-05-04_22-37/predictions/test_predictions.csv"
-  efficientnet_b0: "results/training/efficientnet_b0/2026-05-05_16-58/predictions/test_predictions.csv"
+#  vgg16: "results/training/vgg16/2026-05-13_11-59/predictions/test_predictions.csv"
+#  resnet50: "results/training/resnet50/2026-05-07_10-33/predictions/test_predictions.csv"
+#  alexnet: "results/training/alexnet/2026-05-15_12-12/predictions/test_predictions.csv"
+#  inceptionv3: "results/training/inceptionv3/2026-05-04_22-37/predictions/test_predictions.csv"
+#  efficientnet_b0: "results/training/efficientnet_b0/2026-05-05_16-58/predictions/test_predictions.csv"
 
+  vgg16_v2: "results/training/vgg16_v2/latest/predictions/test_predictions.csv"
+  resnet50_v2: "results/training/resnet50_v2/latest/predictions/test_predictions.csv"
+  alexnet_v2: "results/training/alexnet_v2/latest/predictions/test_predictions.csv"
+  inceptionv3_v2: "results/training/inceptionv3_v2/latest/predictions/test_predictions.csv"
+  efficientnet_b0_v2: "results/training/efficientnet_b0_v2/latest/predictions/test_predictions.csv"
 
 # ------------------------------------------------------------------------------
 # Fusion methods to run
