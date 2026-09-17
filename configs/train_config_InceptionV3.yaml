@@ -12,6 +12,7 @@
 #
 # Usage:
 #   python scripts/train.py --model inceptionv3 --config configs/train_config_InceptionV3.yaml
+#   python scripts/train.py --model inceptionv3_v2 --config configs/train_config_InceptionV3.yaml
 # ==============================================================================
 
 
@@ -67,7 +68,7 @@ model:
 training:
   batch_size: 16          # Reduced from 32 due to larger 299×299 input size
   learning_rate: 0.00001
-  weight_decay: 0.001
+  weight_decay: 0.01
   epochs: 50
 
 
@@ -76,7 +77,7 @@ training:
 # ------------------------------------------------------------------------------
 early_stopping:
   enabled: true
-  patience: 10
+  patience: 20
 
 
 # ------------------------------------------------------------------------------
@@ -94,9 +95,13 @@ normalisation:
 # Data augmentation
 # ------------------------------------------------------------------------------
 augmentation:
-  enabled: True
+  enabled: true
   horizontal_flip: true
-  vertical_flip: false
-  rotation_degrees: 15
-  colour_jitter: true
-  colour_jitter_strength: 0.2
+  vertical_flip: true
+  rotation_degrees: 15      # Randomly rotate up to ±15 degrees
+  colour_jitter: true       # Randomly vary brightness/contrast/saturation
+  colour_jitter_strength: 0.7
+  random_grayscale: true
+  grayscale_probability: 0.3
+  random_perspective: false
+  perspective_distortion: 0.3

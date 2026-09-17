@@ -6,7 +6,8 @@
 # only need to edit this file — no Python code changes required.
 
 # Usage:
-#   python scripts/train.py --model vgg16 --config configs/train_config.yaml
+#   python scripts/train.py --model alexnet --config configs/train_config_AlexNet.yaml
+#   python scripts/train.py --model alexnet_v2 --config configs/train_config_AlexNet.yaml
 # ==============================================================================
 
 
@@ -17,9 +18,9 @@
 # Use forward slashes or double backslashes on Windows.
 # Example: C:/Users/jcac/OneDrive - KTH/Datasets/DataEnsemble/01-train
 paths:
-  train:      "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/01-train/"         # Folder with class subfolders for training
-  val:        "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/02-validation/"    # Folder with class subfolders for validation
-  test:       "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/03-test/"          # Folder with class subfolders for testing
+  train:      "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/01-train/"         # Folder with class subfolders for training
+  val:        "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/02-validation/"    # Folder with class subfolders for validation
+  test:       "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/03-test/"          # Folder with class subfolders for testing
   saved_models: "saved_models/"       # Where best.pth and last.pth are saved
   results:    "results/training/"   # Where metrics, curves, confusion matrices go
 
@@ -67,8 +68,8 @@ model:
 #                Early stopping is applied if no improvement is seen.
 training:
   batch_size: 32
-  learning_rate: 0.0001
-  weight_decay: 0.0001
+  learning_rate: 0.00001
+  weight_decay: 0.01
   epochs: 50
 
 
@@ -103,14 +104,14 @@ normalisation:
 # are NEVER augmented — only the training set.
 # Set 'enabled: false' to skip augmentation entirely.
 augmentation:
-  enabled: False
-  horizontal_flip: true     # Randomly mirror images left-right
+  enabled: True
+  horizontal_flip: false     # Randomly mirror images left-right
   vertical_flip: false      # Usually not useful for damage images
-  rotation_degrees: 15      # Randomly rotate up to ±15 degrees
+  rotation_degrees: 5      # Randomly rotate up to ±15 degrees
   colour_jitter: true       # Randomly vary brightness/contrast/saturation
-  colour_jitter_strength: 0.2
+  colour_jitter_strength: 0.7
   random_grayscale: true
-  grayscale_probability: 0.2
+  grayscale_probability: 0.3
   random_perspective: false
   perspective_distortion: 0.3
 

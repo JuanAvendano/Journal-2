@@ -5,6 +5,7 @@
 #
 # Usage:
 #   python scripts/train.py --model efficientnet_b0 --config configs/train_config_EfficientNetB0.yaml
+#   python scripts/train.py --model efficientnet_b0_v2 --config configs/train_config_EfficientNetB0.yaml
 # ==============================================================================
 
 
@@ -12,9 +13,9 @@
 # Dataset paths
 # ------------------------------------------------------------------------------
 paths:
-  train:        "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/01-train/"
-  val:          "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/02-validation/"
-  test:         "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A3/03-test/"
+  train:        "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/01-train/"
+  val:          "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/02-validation/"
+  test:         "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/03-test/"
   saved_models: "saved_models/"
   results:      "results/training/"
 
@@ -55,7 +56,7 @@ model:
 #   trigger before epoch 50.
 training:
   batch_size: 32
-  learning_rate: 0.00001
+  learning_rate: 0.001
   weight_decay: 0.001
   epochs: 50
 
@@ -82,7 +83,7 @@ normalisation:
 # Data augmentation
 # ------------------------------------------------------------------------------
 augmentation:
-  enabled: True
+  enabled: true
   horizontal_flip: true
   vertical_flip: false
   rotation_degrees: 15

@@ -7,6 +7,7 @@
 
 # Usage:
 #   python scripts/train.py --model resnet50 --config configs/train_config_ResNet50.yaml
+#   python scripts/train.py --model resnet50_v2 --config configs/train_config_ResNet50.yaml
 # ==============================================================================
 
 
@@ -17,9 +18,9 @@
 # Use forward slashes or double backslashes on Windows.
 # Example: C:/Users/jcac/OneDrive - KTH/Datasets/DataEnsemble/01-train
 paths:
-  train:      "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/01-train/"         # Folder with class subfolders for training
-  val:        "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/02-validation/"    # Folder with class subfolders for validation
-  test:       "C:/Users/jcac/Documents/03-TRABAJO/11-PhD/Dataset/A3/03-test/"          # Folder with class subfolders for testing
+  train:      "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/01-train/"         # Folder with class subfolders for training
+  val:        "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/02-validation/"    # Folder with class subfolders for validation
+  test:       "D:/JCA/07-Data/01_Concrete/03-experiment_datasets/A/A6/03-test/"          # Folder with class subfolders for testing
   saved_models: "saved_models/"       # Where best.pth and last.pth are saved
   results:    "results/training/"   # Where metrics, curves, confusion matrices go
 
@@ -68,8 +69,8 @@ model:
 training:
   batch_size: 32
   learning_rate: 0.0001
-  weight_decay: 0.000
-  epochs: 50
+  weight_decay: 0.001
+  epochs: 70
 
 
 # ------------------------------------------------------------------------------
